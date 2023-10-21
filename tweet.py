@@ -13,3 +13,6 @@ class Tweet:
             f: Text processing function to apply.
         """
         self.text = f(self.text)
+    
+    def __repr__(self) -> str:
+        return "(User: {0}, Text: {1})".format(self.user, self.text)
