@@ -1,4 +1,5 @@
 from load_json import load_json
+from preprocess import preprocess
 
 def get_hosts(year):
     '''Hosts is a list of one or more strings. Do NOT change the name
@@ -54,7 +55,8 @@ def main():
     and then run gg_api.main(). This is the second thing the TA will
     run when grading. Do NOT change the name of this function or
     what it returns.'''
-    print(load_json(2013))
+    tweets = load_json(2013)
+    print(preprocess(tweets))
     return
 
 
