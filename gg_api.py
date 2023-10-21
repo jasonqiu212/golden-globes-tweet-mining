@@ -1,3 +1,5 @@
+from load_json import load_json
+
 def get_hosts(year):
     '''Hosts is a list of one or more strings. Do NOT change the name
     of this function or what it returns.'''
@@ -52,7 +54,7 @@ def main():
     and then run gg_api.main(). This is the second thing the TA will
     run when grading. Do NOT change the name of this function or
     what it returns.'''
-    # Your code here
+    print(load_json(2013))
     return
 
 
