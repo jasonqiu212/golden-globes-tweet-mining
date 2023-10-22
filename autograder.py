@@ -13,7 +13,8 @@ from nltk.metrics import edit_distance
 import gg_api
 
 global toMovie
-toMovie = {'johann johannsson': 'the theory of everything', 'alexandre desplat': 'the imitation game', 'trent reznor and atticus ross': 'gone girl', 'antonio sanchez': 'birdman', 'hans zimmer': 'interstellar', 'glory': 'selma', 'big eyes': 'big eyes', 'mercy is': 'noah', 'opportunity': 'annie', 'yellow flicker beat': 'the hunger games mockingjay part 1', 'alejandro gonzalez inarritu': 'birdman', 'wes anderson': 'the grand budapest hotel', 'gillian flynn': 'gone girl', 'richard linklater': 'boyhood', 'graham moore': 'the imitation game'}
+toMovie = {'johann johannsson': 'the theory of everything', 'alexandre desplat': 'the imitation game', 'trent reznor and atticus ross': 'gone girl', 'antonio sanchez': 'birdman', 'hans zimmer': 'interstellar', 'glory': 'selma', 'big eyes': 'big eyes', 'mercy is': 'noah',
+           'opportunity': 'annie', 'yellow flicker beat': 'the hunger games mockingjay part 1', 'alejandro gonzalez inarritu': 'birdman', 'wes anderson': 'the grand budapest hotel', 'gillian flynn': 'gone girl', 'richard linklater': 'boyhood', 'graham moore': 'the imitation game'}
 
 
 def norm_text(textstring):
@@ -33,7 +34,8 @@ def text(resultstr, answerstr):
     len_answer = len(answer)
 
     if (resultstr in answerstr) or (answerstr in resultstr):
-        textscore = min(len_result, len_answer)/float(max(len_result, len_answer))
+        textscore = min(len_result, len_answer) / \
+            float(max(len_result, len_answer))
     else:
         s = difflib.SequenceMatcher(None, result, answer)
 
@@ -113,14 +115,16 @@ def calc_translation(result, answer):
 
                 if bestAnswer and score > 0.45:
                     translation[resultmap[r]] = toMovie[ha]
-                    scores[toMovie[ha]] = spell_check(r, ha, toMovie[ha], scores, 0.5)
+                    scores[toMovie[ha]] = spell_check(
+                        r, ha, toMovie[ha], scores, 0.5)
 
                 flag = False
             elif (max_result[0] == r) or (score_by_results[r][answer_match] > score_by_answers[answer_match][max_result[0]]):
                 # if the top result matching that answer is our current result or
                 # if the current result's score is greater than the previous top result
                 translation[resultmap[r]] = answermap[answer_match]
-                scores[answermap[answer_match]] = spell_check(r, answer_match, answer_match, scores)
+                scores[answermap[answer_match]] = spell_check(
+                    r, answer_match, answer_match, scores)
 
                 flag = False
 
@@ -147,7 +151,7 @@ def calc_score(result, answer):
     elif len_result == len_answer and len_intersection == len_answer:
         m = 1.0
     elif len_intersection == len_result:
-        # all results correspond to a correct answer, but some 
+        # all results correspond to a correct answer, but some
         # answers are missing
         m = 0.95
     elif len_intersection == len_answer:
@@ -180,10 +184,13 @@ def score_structured(year, answers, info_type):
 
     for a in answers['award_data']:
         if info_type == 'winner':
-            temp_spelling, translation = calc_translation([results[a]], [answers['award_data'][a][info_type]])
+            temp_spelling, translation = calc_translation(
+                [results[a]], [answers['award_data'][a][info_type]])
         else:
-            temp_spelling, translation = calc_translation(results[a], answers['award_data'][a][info_type])
-            c_score += calc_score([translation[res] if res in translation else res for res in results[a]], answers['award_data'][a][info_type])
+            temp_spelling, translation = calc_translation(
+                results[a], answers['award_data'][a][info_type])
+            c_score += calc_score([translation[res] if res in translation else res for res in results[a]],
+                                  answers['award_data'][a][info_type])
         spelling_score += temp_spelling
 
     if info_type == "nominees":
@@ -196,7 +203,8 @@ def score_structured(year, answers, info_type):
 def score_unstructured(year, answers, info_type):
     results = getattr(gg_api, 'get_%s' % info_type)(year)
     spelling_score, translation = calc_translation(results, answers[info_type])
-    c_score = calc_score([translation[res] if res in translation else res for res in results], answers[info_type])
+    c_score = calc_score(
+        [translation[res] if res in translation else res for res in results], answers[info_type])
 
     return spelling_score, c_score
 
@@ -205,7 +213,7 @@ def main(grading):
     years = ['2013']
     types = ['spelling', 'completeness']
 
-    scores = {y: {g: {t:0 for t in types} for g in grading} for y in years}
+    scores = {y: {g: {t: 0 for t in types} for g in grading} for y in years}
     for y in years:
         with open('gg%sanswers.json' % y, 'r') as f:
             answers = json.load(f)
@@ -214,13 +222,16 @@ def main(grading):
 
         for g in grading:
             if g in ['hosts', 'awards']:
-                scores[y][g]['spelling'], scores[y][g]['completeness'] = score_unstructured(y, answers, g)
+                scores[y][g]['spelling'], scores[y][g]['completeness'] = score_unstructured(
+                    y, answers, g)
             else:
-                scores[y][g]['spelling'], scores[y][g]['completeness'] = score_structured(y, answers, g)
+                scores[y][g]['spelling'], scores[y][g]['completeness'] = score_structured(
+                    y, answers, g)
 
         if "winner" in grading:
             del scores[y]['winner']['completeness']
     pprint(scores)
+
 
 if __name__ == '__main__':
     grading = ["hosts", "awards", "nominees", "presenters", "winner"]

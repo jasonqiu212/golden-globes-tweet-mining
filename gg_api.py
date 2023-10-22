@@ -1,6 +1,7 @@
 from load_json import load_json
 from preprocess import preprocess
 
+
 def get_hosts(year):
     '''Hosts is a list of one or more strings. Do NOT change the name
     of this function or what it returns.'''

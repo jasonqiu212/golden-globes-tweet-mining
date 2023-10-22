@@ -1,7 +1,9 @@
 """This file reads in tweets from JSON data files."""
 
 import json
+
 from tweet import Tweet
+
 
 def load_json(year=2013):
     """
@@ -16,4 +18,4 @@ def load_json(year=2013):
     with open("gg{}-subset.json".format(year)) as json_file:
         data = json.load(json_file)
 
-        return list(map(lambda t : Tweet(t['text'], t['user']['screen_name']), data))
+        return list(map(lambda t: Tweet(t['text'], t['user']['screen_name']), data))

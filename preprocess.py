@@ -5,11 +5,13 @@ from langdetect import detect
 import re
 from unidecode import unidecode
 
+
 def fixMojibake(str):
     """
     Fixes mojibake in text.
     """
     return ftfy.fix_text(str)
+
 
 def transformToASCII(str):
     """
@@ -18,17 +20,21 @@ def transformToASCII(str):
     """
     return unidecode(str)
 
+
 def removeExtraWhitespace(str):
     """Replaces extra whitespace with a single space."""
     return re.sub(" +", " ", str)
+
 
 def removeURLs(str):
     """Removes URLs from text."""
     return re.sub("https?:\/\/(\S*)", "", str)
 
+
 def isEnglish(str):
     """Checks if text is in English."""
     return detect(str) == 'en'
+
 
 def preprocess(tweets):
     """
@@ -36,7 +42,7 @@ def preprocess(tweets):
 
     Args:
         tweets: List of tweets.
-    
+
     Returns:
         Preprocessed list of tweets.
     """
@@ -45,4 +51,4 @@ def preprocess(tweets):
         tweet.applyTextPreprocessing(transformToASCII)
         tweet.applyTextPreprocessing(removeExtraWhitespace)
         tweet.applyTextPreprocessing(removeURLs)
-    return list(filter(lambda t : isEnglish(t.text), tweets))
+    return list(filter(lambda t: isEnglish(t.text), tweets))
