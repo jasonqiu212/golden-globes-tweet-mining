@@ -19,3 +19,17 @@ def load_json(year=2013):
         data = json.load(json_file)
 
         return list(map(lambda t: Tweet(t['text'], t['user']['screen_name']), data))
+
+
+def load_awards(year=2013):
+    """
+    Loads official award names from JSON answer file.
+
+    Args:
+        year: The year of the award ceremony.
+    Returns:
+        List of official award names from JSON file.
+    """
+    with open("gg{}answers.json".format(year)) as json_file:
+        data = json.load(json_file)
+        return list(data['award_data'].keys())
