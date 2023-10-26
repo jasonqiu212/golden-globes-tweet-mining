@@ -37,11 +37,31 @@ def load_awards(year=2013):
 
 def write_results(data):
     """Writes extracted information to JSON results file."""
+    # TODO
+    # Format of data:
+    # {
+    #   'hosts': [...],
+    #   'awards': [...],
+    #   'award_results': {
+    #       'award1': {
+    #           'presenters': [...],
+    #           'nominees': [...],
+    #           'winner': ''
+    #       },
+    #       'award2': {
+    #           'presenters': [...],
+    #           'nominees': [...],
+    #           'winner': ''
+    #       },
+    #       ...
+    #   }
+    # }
     return
 
 
 def write_human_readable_results(data):
     """Writes extracted information to human-readable results file."""
+    # TODO: data has same format as above, but could include additional information
     return
 
 
