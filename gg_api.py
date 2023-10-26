@@ -1,38 +1,38 @@
-import file
+from file import load_tweets, read_results
 from preprocess import preprocess
 
 
 def get_hosts(year):
     '''Hosts is a list of one or more strings. Do NOT change the name
     of this function or what it returns.'''
-    return file.read_results(year, 'hosts')
+    return read_results(year, 'hosts')
 
 
 def get_awards(year):
     '''Awards is a list of strings. Do NOT change the name
     of this function or what it returns.'''
-    return file.read_results(year, 'awards')
+    return read_results(year, 'awards')
 
 
 def get_nominees(year):
     '''Nominees is a dictionary with the hard coded award
     names as keys, and each entry a list of strings. Do NOT change
     the name of this function or what it returns.'''
-    return file.read_results(year, 'nominees')
+    return read_results(year, 'nominees')
 
 
 def get_winner(year):
     '''Winners is a dictionary with the hard coded award
     names as keys, and each entry containing a single string.
     Do NOT change the name of this function or what it returns.'''
-    return file.read_results(year, 'winner')
+    return read_results(year, 'winner')
 
 
 def get_presenters(year):
     '''Presenters is a dictionary with the hard coded award
     names as keys, and each entry a list of strings. Do NOT change the
     name of this function or what it returns.'''
-    return file.read_results(year, 'presenters')
+    return read_results(year, 'presenters')
 
 
 def pre_ceremony():
@@ -50,7 +50,7 @@ def main():
     and then run gg_api.main(). This is the second thing the TA will
     run when grading. Do NOT change the name of this function or
     what it returns.'''
-    tweets = file.load_tweets(2013)
+    tweets = load_tweets(2013)
     print(preprocess(tweets))
     # perform the extraction
     #
