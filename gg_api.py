@@ -18,7 +18,7 @@ def get_nominees(year):
     '''Nominees is a dictionary with the hard coded award
     names as keys, and each entry a list of strings. Do NOT change
     the name of this function or what it returns.'''
-    return file.read_results(year, 'awards')
+    return file.read_results(year, 'nominees')
 
 
 def get_winner(year):
