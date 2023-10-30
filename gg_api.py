@@ -1,4 +1,6 @@
-from file import load_tweets, read_results
+from extract import extract
+from file import load_awards, load_tweets, read_results, write_human_readable_results, write_results
+from merge import merge
 from preprocess import preprocess
 
 
@@ -50,10 +52,12 @@ def main():
     and then run gg_api.main(). This is the second thing the TA will
     run when grading. Do NOT change the name of this function or
     what it returns.'''
-    tweets = load_tweets(2013)
-    print(preprocess(tweets))
-    # perform the extraction
-    #
+    tweets = preprocess(load_tweets(2013))
+    official_award_names = load_awards(2013)
+    preliminary_results = extract(tweets, official_award_names)
+    final_results = merge(preliminary_results)
+    write_results(final_results)
+    write_human_readable_results(final_results)
 
 
 if __name__ == '__main__':

@@ -35,9 +35,9 @@ def load_awards(year=2013):
         return list(data['award_data'].keys())
 
 
-def write_results(data):
+def write_results(data, year):
     """Writes extracted information to JSON results file."""
-    # TODO
+    # TODO: Remove comment when done
     # Format of data:
     # {
     #   'hosts': [...],
@@ -56,7 +56,9 @@ def write_results(data):
     #       ...
     #   }
     # }
-    return
+    json_object = json.dumps(data, indent=4)
+    with open("gg{}results.json".format(year), "w") as outfile:
+        outfile.write(json_object)
 
 
 def write_human_readable_results(data):
