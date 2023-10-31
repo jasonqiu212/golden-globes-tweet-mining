@@ -1,12 +1,14 @@
-import spacy
 from collections import Counter
 from datetime import datetime, timedelta
-# nlp = spacy.load("en_core_web_sm")
+import spacy
 
+nlp = spacy.load("en_core_web_sm")
 
 # to use this function:
 # tweets is origin tweets(处理过冗余文字), persons和awards是我们已经通过extract 方法找到的所有的tweets中提及的可能的人物和奖项，他们之间的联系(who win what)还没被建立起来.
 # extract persons 和 awards 需要在main中完成，我这会儿正在写.
+
+
 def get_most_mentioned(tweets, persons, awards, window_size_seconds):
 
     sorted_tweets = sorted(tweets, key=lambda x: x["timestamp_ms"])
