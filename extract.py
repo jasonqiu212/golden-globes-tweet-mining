@@ -128,6 +128,33 @@ def dextract_all(tweet):
     return persons, awards
 
 
+def extract_nomination_info(sentence):
+    matcher = spacy.Matcher(nlp.vocab)
+
+    # 定义匹配模式
+    person_pattern = [{"ENT_TYPE": "PERSON"}]
+    award_pattern = [{"LOWER": "best"}, {"POS": "NOUN", "OP": "?"}]
+    nominate_pattern = [{"LEMMA": "nominate"}]
+    optional_words_pattern = [
+        {"POS": "VERB", "OP": "*"}, {"LOWER": "to", "OP": "?"}]
+
+    matcher.add("PERSON", [person_pattern])
+    matcher.add("AWARD", [award_pattern])
+    matcher.add("NOMINATE", [nominate_pattern])
+
+    doc = nlp(sentence)
+
+    matches = matcher(doc)
+    persons = [doc[start:end].text for match_id, start,
+               end in matches if nlp.vocab.strings[match_id] == "PERSON"]
+    awards = [doc[start:end].text for match_id, start,
+              end in matches if nlp.vocab.strings[match_id] == "AWARD"]
+
+    if any(token.lemma_ == "nominate" for token in doc):
+        return [(person, award) for person in persons for award in awards]
+    return []
+
+
 def extract(tweets, award_names):
     """
     Extracts hosts, award names, presenters, nominees, and
