@@ -64,6 +64,46 @@ def find_relevant_tweets(tweets, keywords):
     return relevant_tweets
 
 
+def extract_hosts(tweets):
+    """
+    Extracts potential hosts from tweets.
+
+    Args:
+        tweets: List of tweets to extract from.
+    Returns:
+        List of potential hosts.
+    """
+    return []
+
+
+def extract_awards(tweets):
+    """
+    Extracts potential awards from tweets.
+
+    Args:
+        tweets: List of tweets to extract from.
+    Returns:
+        List of potential awards.
+    """
+    awards = []
+    # if phrase contains 'best' + AWARD_CATEGORIES + AWARD_QUALIFIERS, add into result
+    # if phrase contains PERSON_NAME + 'award', add into result
+    return awards
+
+
+def extract_using_award_names(tweets, award_names):
+    """
+    Extracts potential presenters, nominees, and winners from tweets based on official award names.
+
+    Args:
+        tweets: List of tweets to extract from.
+        award_names: List of official award names.
+    Returns:
+        Dicionary of official award names mapped to potential presenters, nominees, and winners.
+    """
+    return {}
+
+
 def extract_person(tweet):
     doc = nlp(tweet["text"])
     entities = [(ent.text, ent.label_) for ent in doc.ents]
@@ -97,6 +137,11 @@ def extract(tweets, award_names):
         tweets: List of tweets to extract from.
         award_names: List of official award names.
     Returns:
-        List of preliminary results extracted from tweets.
+        Dictionary of preliminary results extracted from tweets.
     """
-    return
+    preliminary_results = {}
+    preliminary_results['hosts'] = extract_hosts(tweets)
+    preliminary_results['awards'] = extract_awards(tweets)
+    preliminary_results['award_results'] = extract_using_award_names(
+        tweets, award_names)
+    return preliminary_results
