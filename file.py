@@ -57,14 +57,31 @@ def write_results(data, year):
     #   }
     # }
     json_object = json.dumps(data, indent=4)
-    with open("gg{}results.json".format(year), "w") as outfile:
-        outfile.write(json_object)
+    with open("gg{}results.json".format(year), "w") as f:
+        f.write(json_object)
 
 
-def write_human_readable_results(data):
+def write_human_readable_results(data, year):
     """Writes extracted information to human-readable results file."""
-    # TODO: data has same format as above, but could include additional information
-    return
+    lines = []
+
+    lines.append('Hosts: ' + ', '.join(data['hosts']))
+    lines.append('')
+
+    lines.append('Awards: ' + ', '.join(data['awards']))
+    lines.append('')
+
+    for award in data['award_results'].keys():
+        award_result = data['award_results'][award]
+
+        lines.append('Award: ' + award)
+        lines.append('Presenters: ' + ', '.join(award_result['presenters']))
+        lines.append('Nominees: ' + ', '.join(award_result['nominees']))
+        lines.append('Winner: ' + award_result['winner'])
+        lines.append('')
+
+    with open("gg{}results_humanreadable.txt".format(year), "w") as f:
+        f.writelines(lines)
 
 
 def read_results(year, component):
