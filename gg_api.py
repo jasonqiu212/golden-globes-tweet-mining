@@ -52,12 +52,14 @@ def main():
     and then run gg_api.main(). This is the second thing the TA will
     run when grading. Do NOT change the name of this function or
     what it returns.'''
-    tweets = preprocess(load_tweets(2013))
-    official_award_names = load_awards(2013)
+    YEAR = 2013
+
+    tweets = preprocess(load_tweets(YEAR))
+    official_award_names = load_awards(YEAR)
     preliminary_results = extract(tweets, official_award_names)
     final_results = merge(preliminary_results)
-    write_results(final_results)
-    write_human_readable_results(final_results)
+    write_results(final_results, YEAR)
+    write_human_readable_results(final_results, YEAR)
 
 
 if __name__ == '__main__':
