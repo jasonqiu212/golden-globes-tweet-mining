@@ -6,7 +6,7 @@ import editdistance
 from imdb import Cinemagoer
 import spacy
 
-from keywords import AWARD_CATEGORIES, AWARD_QUALIFIERS
+from keywords import AWARD_CATEGORIES, AWARD_QUALIFIERS, extract_keywords_from_award_names
 
 ia = Cinemagoer()
 nlp = spacy.load("en_core_web_sm")
@@ -270,7 +270,21 @@ def extract_using_award_names(tweets, award_names):
     Returns:
         Dicionary of official award names mapped to potential presenters, nominees, and winners.
     """
-    return {}
+    award_results = {}
+    for award_name in award_names:
+        award_results[award_name] = {
+            'presenters': [], 'nominees': [], 'winner': []}
+
+    awards_keywords = extract_keywords_from_award_names(award_names)
+
+    for tweet in tweets:
+        if ' award' not in tweet.text and 'best ' not in tweet.text:
+            continue
+        # check if any of all keywords are in the tweets
+        # if so, I can pinpoint that this tweet may have some useful information about this award
+        # search for keywords about winner, nominees, and presenters
+
+    return award_results
 
 
 def extract_person(tweet):
@@ -338,6 +352,6 @@ def extract(tweets, award_names):
     preliminary_results = {}
     preliminary_results['hosts'] = extract_hosts(tweets)
     preliminary_results['awards'] = extract_awards(tweets)
-    # preliminary_results['award_results'] = extract_using_award_names(
-    #     tweets, award_names)
+    preliminary_results['award_results'] = extract_using_award_names(
+        tweets, award_names)
     return preliminary_results
