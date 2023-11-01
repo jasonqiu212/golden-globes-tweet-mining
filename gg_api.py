@@ -52,10 +52,13 @@ def main():
     and then run gg_api.main(). This is the second thing the TA will
     run when grading. Do NOT change the name of this function or
     what it returns.'''
+    # Change following constants to read from files containing tweets and answers
     YEAR = 2013
+    TWEETS_FILE_NAME = 'gg{}.json'.format(YEAR)
+    ANSWER_FILE_NAME = 'gg{}answers.json'.format(YEAR)
 
-    tweets = preprocess(load_tweets(YEAR))
-    official_award_names = load_awards(YEAR)
+    tweets = preprocess(load_tweets(TWEETS_FILE_NAME))
+    official_award_names = load_awards(ANSWER_FILE_NAME)
     preliminary_results = extract(tweets, official_award_names)
     final_results = merge(preliminary_results)
     write_results(final_results, YEAR)

@@ -5,7 +5,7 @@ import json
 from tweet import Tweet
 
 
-def load_tweets(year=2013):
+def load_tweets(file_name):
     """
     Loads tweets from JSON data file.
 
@@ -14,14 +14,15 @@ def load_tweets(year=2013):
     Returns:
         List of tweets from JSON file.
     """
-    # with open("gg{}.json".format(year)) as json_file:
-    with open("gg{}-subset.json".format(year)) as json_file:
+    # TODO: Change import file when done
+    # with open(file_name) as json_file:
+    with open("gg{}-subset.json".format(2013)) as json_file:
         data = json.load(json_file)
 
         return list(map(lambda t: Tweet(t['text'], t['user']['screen_name']), data))
 
 
-def load_awards(year=2013):
+def load_awards(file_name):
     """
     Loads official award names from JSON answer file.
 
@@ -30,7 +31,7 @@ def load_awards(year=2013):
     Returns:
         List of official award names from JSON file.
     """
-    with open("gg{}answers.json".format(year)) as json_file:
+    with open(file_name) as json_file:
         data = json.load(json_file)
         return list(data['award_data'].keys())
 
