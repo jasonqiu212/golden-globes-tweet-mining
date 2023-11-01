@@ -354,14 +354,12 @@ def extract_nominee(tweet, matched_award_keywords):
     Returns:
         String representing extracted nominee from tweet. None, if no nominee is found.
     """
-    # strat 1: if contains keywords, i identify the closest matching ceremony entity in the tweet
+    nominee = None
     if any(k in AWARD_CATEGORIES_CELEBRITY_TYPE for k in matched_award_keywords):
-
-        return ''
+        nominee = find_closest_matching_ceremony_entity(tweet, 'celebrity')
     elif any(k in AWARD_CATEGORIES_PICTURE_TYPE for k in matched_award_keywords):
-        # i am looking for a movie
-        return ''
-    return None
+        nominee = find_closest_matching_ceremony_entity(tweet, 'picture')
+    return nominee
 
 
 def find_first_matching_keyword(tweet, keywords):
