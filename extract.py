@@ -71,39 +71,34 @@ def find_relevant_tweets(tweets, keywords):
     return relevant_tweets
 
 
-def find_ceremony_entity_from_left_side_words(left_side_words, type):
+def get_best_ceremony_entity(candidates, type):
     """
-    Extract ceremony entity from list of words going from right to left.
+    Extract closest matching ceremony entity from list of candidates.
 
     Args:
-        left_side_words: List of words to search from.
+        candidates: List of candidates.
         type: 'celebrity' or 'picture'.
     Returns:
         String representing extracted ceremony entity. None, if ceremony entity
         cannot be identified.
     """
-    if type != 'celebrity' and type != 'picture':
-        return None
-
-    candidates = []
-    for i in range(2, 5 if type == 'celebrity' else 8):
-        if i > len(left_side_words):
-            break
-        candidates.append(
-            " ".join(left_side_words[len(left_side_words) - i:]))
-
     candidate_search_results = []
     for candidate in candidates:
         search_results = []
         if type == 'celebrity':
             search_results = ia.search_person(candidate)
+            if search_results:
+                candidate_search_results.append(
+                    search_results[0].get('name').lower())
+            else:
+                candidate_search_results.append(None)
         elif type == 'picture':
             search_results = ia.search_movie(candidate)
-        if search_results:
-            candidate_search_results.append(
-                search_results[0].get('name').lower())
-        else:
-            candidate_search_results.append(None)
+            if search_results:
+                candidate_search_results.append(
+                    search_results[0].get('title').lower())
+            else:
+                candidate_search_results.append(None)
 
     best_name, least_edit_distance = '', 999999
     for i in range(len(candidates)):
@@ -119,6 +114,30 @@ def find_ceremony_entity_from_left_side_words(left_side_words, type):
         return None
 
     return best_name
+
+
+def find_ceremony_entity_from_left_side_words(left_side_words, type):
+    """
+    Extract ceremony entity from list of words going from right to left.
+
+    Args:
+        left_side_words: List of words to search from.
+        type: 'celebrity' or 'picture'.
+    Returns:
+        String representing extracted ceremony entity. None, if ceremony entity
+        cannot be identified.
+    """
+    if type != 'celebrity' and type != 'picture':
+        return None
+
+    candidates = []
+    for i in range(2 if type == 'celebrity' else 1, 5 if type == 'celebrity' else 8):
+        if i > len(left_side_words):
+            break
+        candidates.append(
+            " ".join(left_side_words[len(left_side_words) - i:]))
+
+    return get_best_ceremony_entity(candidates, type)
 
 
 def find_ceremony_entity_from_right_side_words(right_side_words, type):
@@ -136,39 +155,13 @@ def find_ceremony_entity_from_right_side_words(right_side_words, type):
         return None
 
     candidates = []
-    for i in range(2, 5 if type == 'celebrity' else 8):
+    for i in range(2 if type == 'celebrity' else 1, 5 if type == 'celebrity' else 8):
         if i >= len(right_side_words):
             break
         candidates.append(
             " ".join(right_side_words[:i]))
 
-    candidate_search_results = []
-    for candidate in candidates:
-        search_results = []
-        if type == 'celebrity':
-            search_results = ia.search_person(candidate)
-        elif type == 'picture':
-            search_results = ia.search_movie(candidate)
-        if search_results:
-            candidate_search_results.append(
-                search_results[0].get('name').lower())
-        else:
-            candidate_search_results.append(None)
-
-    best_name, least_edit_distance = '', 999999
-    for i in range(len(candidates)):
-        if candidate_search_results[i] == None:
-            continue
-        edit_distance = editdistance.eval(
-            candidates[i], candidate_search_results[i])
-        if edit_distance < least_edit_distance:
-            best_name = candidate_search_results[i]
-            least_edit_distance = edit_distance
-
-    if least_edit_distance > 10:
-        return None
-
-    return best_name
+    return get_best_ceremony_entity(candidates, type)
 
 
 def extract_hosts(tweets):
@@ -325,6 +318,32 @@ def extract_winner(tweet, matched_award_keywords):
     return None
 
 
+def find_closest_matching_ceremony_entity(tweet, type):
+    """
+    Extract closest matching ceremony entity from tweet.
+
+    Args:
+        tweet: Tweet to search from.
+        type: 'celebrity' or 'picture'.
+    Returns:
+        String representing extracted ceremony entity. None, if ceremony entity
+        cannot be identified.
+    """
+    if type != 'celebrity' and type != 'picture':
+        return None
+
+    words = tweet.text.split()
+    candidates = []
+    for i in range(len(words)):
+        for j in range(2 if type == 'celebrity' else 1, 5 if type == 'celebrity' else 8):
+            if i + j >= len(words):
+                break
+
+            candidates.append(words[i:i + j])
+
+    return get_best_ceremony_entity(candidates, type)
+
+
 def extract_nominee(tweet, matched_award_keywords):
     """
     Extracts nominee from tweet.
@@ -335,8 +354,9 @@ def extract_nominee(tweet, matched_award_keywords):
     Returns:
         String representing extracted nominee from tweet. None, if no nominee is found.
     """
+    # strat 1: if contains keywords, i identify the closest matching ceremony entity in the tweet
     if any(k in AWARD_CATEGORIES_CELEBRITY_TYPE for k in matched_award_keywords):
-        # i am looking for a person
+
         return ''
     elif any(k in AWARD_CATEGORIES_PICTURE_TYPE for k in matched_award_keywords):
         # i am looking for a movie
