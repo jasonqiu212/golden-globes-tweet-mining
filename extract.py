@@ -6,7 +6,7 @@ import editdistance
 from imdb import Cinemagoer
 import spacy
 
-from keywords import AWARD_CATEGORIES, AWARD_QUALIFIERS, extract_keywords_from_award_names, PRESENTER_KEYWORDS_PLURAL, PRESENTER_KEYWORDS_SINGULAR, WINNER_KEYWORDS
+from keywords import AWARD_CATEGORIES, AWARD_CATEGORIES_CELEBRITY_TYPE, AWARD_CATEGORIES_PICTURE_TYPE, AWARD_QUALIFIERS, extract_keywords_from_award_names, PRESENTER_KEYWORDS_PLURAL, PRESENTER_KEYWORDS_SINGULAR, WINNER_KEYWORDS
 
 ia = Cinemagoer()
 nlp = spacy.load("en_core_web_sm")
@@ -287,7 +287,7 @@ def extract_winner(tweet):
     Args:
         tweet: Tweet to extract from.
     Returns:
-        String representing extracted winner from tweet. None, if no winners are found.
+        String representing extracted winner from tweet. None, if no winner is found.
     """
     matching_keyword = find_first_matching_keyword(tweet, WINNER_KEYWORDS)
     if matching_keyword:
@@ -300,15 +300,23 @@ def extract_winner(tweet):
     return None
 
 
-def extract_nominee(tweet):
+def extract_nominee(tweet, matched_award_keywords):
     """
-    Extracts winner from tweet.
+    Extracts nominee from tweet.
 
     Args:
         tweet: Tweet to extract from.
+        matched_award_keywords: List of must-have award keywords that the given tweet matched with.
     Returns:
-        String representing extracted winner from tweet. None, if no winners are found.
+        String representing extracted nominee from tweet. None, if no nominee is found.
     """
+    if any(k in AWARD_CATEGORIES_CELEBRITY_TYPE for k in matched_award_keywords):
+        # i am looking for a person
+        return ''
+    elif any(k in AWARD_CATEGORIES_PICTURE_TYPE for k in matched_award_keywords):
+        # i am looking for a movie
+        return ''
+    return None
 
 
 def find_first_matching_keyword(tweet, keywords):
@@ -433,7 +441,8 @@ def extract_using_award_names(tweets, award_names):
         if candidate_winner:
             award_results[mentioned_award]['winners'].append(candidate_winner)
             continue
-        candidate_nominee = extract_nominee(tweet)
+        candidate_nominee = extract_nominee(
+            tweet, awards_keywords[mentioned_award]['must_have'])
         if candidate_nominee:
             award_results[mentioned_award]['nominees'].append(
                 candidate_nominee)

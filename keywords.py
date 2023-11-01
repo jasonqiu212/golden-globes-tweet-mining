@@ -2,6 +2,9 @@
 
 AWARD_CATEGORIES = {'film', 'picture', 'television', 'series',
                     'song', 'score', 'actress', 'actor', 'director', 'screenplay', 'script'}
+AWARD_CATEGORIES_PICTURE_TYPE = {'film', 'picture', 'television', 'series',
+                                 'song', 'score', 'screenplay', 'script'}
+AWARD_CATEGORIES_CELEBRITY_TYPE = {'actress', 'actor', 'director'}
 AWARD_QUALIFIERS = {'picture', 'television', 'mini-series', 'series',
                     'comedy', 'musical', 'drama', 'animated', 'supporting', 'foreign', 'language'}
 
