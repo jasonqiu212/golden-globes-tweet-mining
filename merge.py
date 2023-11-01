@@ -47,7 +47,7 @@ def merge_through_voting_highest_k_results(preliminary_results, k):
 
         pq.put((-vote, result))
     for _ in range(k):
-        if not pq:
+        if pq.qsize() == 0:
             break
         most_voted.append(pq.get()[1])
     return most_voted
@@ -83,7 +83,7 @@ def merge_nominees(preliminary_nominees, final_winner):
 
 def merge_award_results(preliminary_award_results):
     final_award_results = {}
-    for award_name in preliminary_award_results.key():
+    for award_name in preliminary_award_results.keys():
         final_award_results[award_name] = {}
 
         merged_presenters_results = merge_through_voting_highest_k_results(
