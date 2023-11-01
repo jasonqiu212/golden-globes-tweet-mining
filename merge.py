@@ -105,7 +105,13 @@ def merge_award_results(preliminary_award_results):
 def merge(preliminary_results):
     final_results = {}
     final_results['hosts'] = merge_through_voting(preliminary_results['hosts'])
+    print('Finished merging host results')
+
     final_results['awards'] = merge_awards(preliminary_results['awards'])
+    print('Finished merging award results')
+
     final_results['award_results'] = merge_award_results(
         preliminary_results['award_results'])
+    print('Finished merging presenters, winners, and nominees')
+
     return final_results

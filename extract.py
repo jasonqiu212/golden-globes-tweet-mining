@@ -517,7 +517,13 @@ def extract(tweets, award_names):
     """
     preliminary_results = {}
     preliminary_results['hosts'] = extract_hosts(tweets)
+    print('Finished extracting hosts')
+
     preliminary_results['awards'] = extract_awards(tweets)
+    print('Finished extracting awards')
+
     preliminary_results['award_results'] = extract_using_award_names(
         tweets, award_names)
+    print('Finished extracting award results')
+
     return preliminary_results
