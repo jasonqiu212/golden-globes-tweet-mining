@@ -1,8 +1,9 @@
 """This file preprocesses the tweets before extraction."""
 
+import re
+
 import ftfy
 from langdetect import detect
-import re
 from unidecode import unidecode
 
 
