@@ -92,6 +92,7 @@ def merge_award_results(preliminary_award_results):
 
         merged_winner_results = merge_through_voting_highest_k_results(
             preliminary_award_results[award_name]['winners'], 1)
+        final_award_results[award_name]['winner'] = ''
         if merged_winner_results:
             final_award_results[award_name]['winner'] = merged_winner_results[0]
 
