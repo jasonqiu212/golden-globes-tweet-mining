@@ -15,7 +15,7 @@ def load_tweets(file_name):
         List of tweets from JSON file.
     """
     with open(file_name) as json_file:
-    # with open("gg{}-subset.json".format(2013)) as json_file:
+        # with open("gg{}-subset.json".format(2013)) as json_file:
         data = json.load(json_file)
 
         return list(map(lambda t: Tweet(t['text'], t['user']['screen_name']), data))
@@ -37,25 +37,6 @@ def load_awards(file_name):
 
 def write_results(data, year):
     """Writes extracted information to JSON results file."""
-    # TODO: Remove comment when done
-    # Format of data:
-    # {
-    #   'hosts': [...],
-    #   'awards': [...],
-    #   'award_results': {
-    #       'award1': {
-    #           'presenters': [...],
-    #           'nominees': [...],
-    #           'winner': ''
-    #       },
-    #       'award2': {
-    #           'presenters': [...],
-    #           'nominees': [...],
-    #           'winner': ''
-    #       },
-    #       ...
-    #   }
-    # }
     json_object = json.dumps(data, indent=4)
     with open("gg{}results.json".format(year), "w") as f:
         f.write(json_object)
