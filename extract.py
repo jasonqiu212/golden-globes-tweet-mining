@@ -83,7 +83,9 @@ def extract_hosts(tweets):
 
 def extract_awards(tweets):
     """
-    Extracts potential awards from tweets.
+    Extracts potential awards from tweets using the following strategies:
+    1. Find phrases in the format of PERSON_NAME + ' award'
+    2. Find phrases in the format of 'best ' + AWARD_CATEGORY + AWARD_QUALIFIER
 
     Args:
         tweets: List of tweets to extract from.
