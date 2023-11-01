@@ -10,7 +10,7 @@ def load_tweets(file_name):
     Loads tweets from JSON data file.
 
     Args:
-        year: The year of the award ceremony.
+        file_name: File name of JSON data file.
     Returns:
         List of tweets from JSON file.
     """
@@ -27,7 +27,7 @@ def load_awards(file_name):
     Loads official award names from JSON answer file.
 
     Args:
-        year: The year of the award ceremony.
+        file_name: File name of JSON answer file.
     Returns:
         List of official award names from JSON file.
     """
