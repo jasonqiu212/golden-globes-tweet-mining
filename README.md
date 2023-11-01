@@ -10,6 +10,8 @@ Team members:
 
 This project mines and extracts information from tweets about motion picture award ceremonies.
 
+The sample dataset given in this repository are tweets from the [70th Golden Globe Awards](https://www.goldenglobes.com/winners-nominees/2013) in 2013.
+
 The extracted information includes:
 
 - Host(s) for the ceremony
