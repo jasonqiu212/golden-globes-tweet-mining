@@ -34,7 +34,7 @@ $ python3 install -r requirements.txt
 $ python3 -m spacy download en_core_web_sm
 ```
 
-3. If you need to change the file names containing the tweets and answers, change the corresponding constants under the `main` function in `gg_api.py`.`
+3. If you need to change the file names containing the tweets and answers, change the corresponding constants under the `main` function in `gg_api.py`.
 
 ```
 YEAR = 2013
