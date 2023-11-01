@@ -14,8 +14,9 @@ def load_tweets(file_name):
     Returns:
         List of tweets from JSON file.
     """
+    # Uncomment following line to try on smaller subset of datafile
     with open(file_name) as json_file:
-        # with open("gg{}-subset.json".format(2013)) as json_file:
+    # with open("gg{}-subset.json".format(2013)) as json_file:
         data = json.load(json_file)
 
         return list(map(lambda t: Tweet(t['text'], t['user']['screen_name']), data))
