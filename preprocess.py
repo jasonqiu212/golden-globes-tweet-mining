@@ -42,18 +42,28 @@ def is_english(str):
 
 
 def remove_symbol_and_split(match):
+    """
+    Remove symbol in front of match object and add spaces before capitalized letters.
+    """
     return re.sub(r'([a-z])([A-Z])', r'\1 \2', match.group(1))
 
 
 def process_ats(str):
+    """
+    Process words with @ symbol in front. 
+    """
     return re.sub("@(\S*)", remove_symbol_and_split, str)
 
 
 def process_hashtags(str):
+    """
+    Process words with # symbol in front. 
+    """
     return re.sub("#(\S*)", remove_symbol_and_split, str)
 
 
 def replace_ampersand(str):
+    """Replace ampersand with 'and'."""
     return re.sub("&", "and", str)
 
 
