@@ -34,7 +34,11 @@ def remove_URLs(str):
 
 def is_english(str):
     """Checks if text is in English."""
-    return detect(str) == 'en'
+    try:
+        language = detect(str)
+        return language == 'en'
+    except:
+        return False
 
 
 def remove_symbol_and_split(match):
