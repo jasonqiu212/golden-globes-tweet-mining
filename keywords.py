@@ -28,7 +28,9 @@ def extract_keywords_from_award_names(award_names):
         keywords[award_name] = {'must_have': [], 'qualifiers': []}
 
         if ' award' in award_name:
-            keywords[award_name]['must_have'].append(award_name)
+            award_celebrity_name = award_name.split(' award')[0]
+            keywords[award_name]['must_have'].append('award')
+            keywords[award_name]['must_have'].append(award_celebrity_name)
             continue
 
         keywords[award_name]['must_have'].append('best')
