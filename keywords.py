@@ -1,8 +1,8 @@
 """This file contains constants of keywords for parsing and a method to parse keywords from award names."""
 
-AWARD_CATEGORIES = {'film', 'picture', 'television', 'series',
+AWARD_CATEGORIES = {'film', 'picture', 'series',
                     'song', 'score', 'actress', 'actor', 'director', 'screenplay', 'script'}
-AWARD_CATEGORIES_PICTURE_TYPE = {'film', 'picture', 'television', 'series',
+AWARD_CATEGORIES_PICTURE_TYPE = {'film', 'picture', 'series',
                                  'song', 'score', 'screenplay', 'script'}
 AWARD_CATEGORIES_CELEBRITY_TYPE = {'actress', 'actor', 'director'}
 AWARD_QUALIFIERS = {'picture', 'television', 'mini-series', 'series',
@@ -17,6 +17,8 @@ NOMINEES = []
 
 PRESENTER_KEYWORDS_PLURAL = {'award', 'present', 'to present'}
 PRESENTER_KEYWORDS_SINGULAR = {'awards', 'presents', 'to present'}
+
+NOMINEE_KEYWORDS = {'nominated', 'nominee'}
 
 
 def extract_keywords_from_award_names(award_names):
