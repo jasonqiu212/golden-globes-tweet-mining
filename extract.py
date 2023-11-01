@@ -1,5 +1,6 @@
 from collections import Counter
 from datetime import datetime, timedelta
+import re
 
 import editdistance
 from imdb import Cinemagoer
@@ -7,6 +8,7 @@ import spacy
 
 from keywords import AWARD_CATEGORIES, AWARD_QUALIFIERS
 
+ia = Cinemagoer()
 nlp = spacy.load("en_core_web_sm")
 
 # to use this function:
@@ -69,16 +71,116 @@ def find_relevant_tweets(tweets, keywords):
     return relevant_tweets
 
 
+def find_celebrity_name_from_right_side_words(right_side_words):
+    """
+    Extract celebrity name from list of words starting from the right.
+
+    Args:
+        right_side_words: List of words to search from.
+    Returns:
+        String representing extracted celebrity name. None, if celebrity name
+        cannot be identified.
+    """
+    candidates = []
+    for i in range(2, 5):
+        if i >= len(right_side_words):
+            break
+        candidates.append(
+            " ".join(right_side_words[:i]))
+
+    candidate_search_results = []
+    for candidate in candidates:
+        search_results = ia.search_person(candidate)
+        if search_results:
+            candidate_search_results.append(
+                search_results[0].get('name').lower())
+        else:
+            candidate_search_results.append(None)
+
+    best_name, least_edit_distance = '', 999999
+    for i in range(len(candidates)):
+        if candidate_search_results[i] == None:
+            continue
+        edit_distance = editdistance.eval(
+            candidates[i], candidate_search_results[i])
+        if edit_distance < least_edit_distance:
+            best_name = candidate_search_results[i]
+            least_edit_distance = edit_distance
+
+    if least_edit_distance > 10:
+        return None
+
+    return best_name
+
+
 def extract_hosts(tweets):
     """
-    Extracts potential hosts from tweets.
+    Extracts potential hosts from tweets using the following strategies:
+    1. Find phrases in the format of 'hosted by ' + PERSON_NAME + ' and ' + PERSON_NAME
+    2. Find phrases in the format of 'hosted by ' + PERSON_NAME
+    3. Find phrases in the format of 'hosts ' + PERSON_NAME + ' and ' + PERSON_NAME
+    4. Find phrases in the format of 'host ' + PERSON_NAME
 
     Args:
         tweets: List of tweets to extract from.
     Returns:
         List of potential hosts.
     """
-    return []
+    hosts = []
+    for tweet in tweets:
+        if re.search("hosted by [\w\s]+ and [\w\s]+", tweet.text):
+            hosted_by_split = tweet.text.split('hosted by ')
+            right_side_words = hosted_by_split[1].split()
+
+            and_split = ' '.join(right_side_words).split(' and ')
+
+            left_candidate = and_split[0]
+            left_candidate_search_result = ia.search_person(
+                left_candidate)[0].get('name').lower()
+
+            if editdistance.eval(left_candidate, left_candidate_search_result) < 10:
+                hosts.append(left_candidate_search_result)
+
+            right_host_words = and_split[1].split()
+            right_host_name = find_celebrity_name_from_right_side_words(
+                right_host_words)
+            if right_host_name:
+                hosts.append(right_host_name)
+        elif 'hosted by ' in tweet.text:
+            hosted_by_split = tweet.text.split('hosted by ')
+            right_side_words = hosted_by_split[1].split()
+
+            host_name = find_celebrity_name_from_right_side_words(
+                right_side_words)
+            if host_name:
+                hosts.append(host_name)
+        elif re.search("hosts [\w\s]+ and [\w\s]+", tweet.text):
+            hosts_split = tweet.text.split('hosts ')
+            right_side_words = hosts_split[1].split()
+
+            and_split = ' '.join(right_side_words).split(' and ')
+
+            left_candidate = and_split[0]
+            left_candidate_search_result = ia.search_person(
+                left_candidate)[0].get('name').lower()
+
+            if editdistance.eval(left_candidate, left_candidate_search_result) < 10:
+                hosts.append(left_candidate_search_result)
+
+            right_host_words = and_split[1].split()
+            right_host_name = find_celebrity_name_from_right_side_words(
+                right_host_words)
+            if right_host_name:
+                hosts.append(right_host_name)
+        elif 'host ' in tweet.text:
+            hosted_by_split = tweet.text.split('host ')
+            right_side_words = hosted_by_split[1].split()
+
+            host_name = find_celebrity_name_from_right_side_words(
+                right_side_words)
+            if host_name:
+                hosts.append(host_name)
+    return hosts
 
 
 def extract_awards(tweets):
@@ -92,7 +194,6 @@ def extract_awards(tweets):
     Returns:
         List of potential awards.
     """
-    ia = Cinemagoer()
     awards = []
     for tweet in tweets:
         if ' award' in tweet.text:
@@ -108,11 +209,17 @@ def extract_awards(tweets):
 
             candidate_search_results = []
             for candidate in candidates:
-                candidate_search_results.append(
-                    ia.search_person(candidate)[0].get('name').lower())
+                search_results = ia.search_person(candidate)
+                if search_results:
+                    candidate_search_results.append(
+                        search_results[0].get('name').lower())
+                else:
+                    candidate_search_results.append(None)
 
             best_name, least_edit_distance = '', 999999
             for i in range(len(candidates)):
+                if candidate_search_results[i] == None:
+                    continue
                 edit_distance = editdistance.eval(
                     candidates[i], candidate_search_results[i])
                 if edit_distance < least_edit_distance:
@@ -231,6 +338,6 @@ def extract(tweets, award_names):
     preliminary_results = {}
     preliminary_results['hosts'] = extract_hosts(tweets)
     preliminary_results['awards'] = extract_awards(tweets)
-    preliminary_results['award_results'] = extract_using_award_names(
-        tweets, award_names)
+    # preliminary_results['award_results'] = extract_using_award_names(
+    #     tweets, award_names)
     return preliminary_results
