@@ -310,9 +310,16 @@ def extract_winner(tweet, matched_award_keywords):
     if matching_keyword:
         keyword_split = tweet.text.split(' ' + matching_keyword + ' ')
         left_side_words = keyword_split[0].split()
-        winner_name = find_ceremony_entity_from_left_side_words(
-            left_side_words, 'celebrity')
-        if winner_name:
+
+        winner_name = ''
+        if any(k in AWARD_CATEGORIES_CELEBRITY_TYPE for k in matched_award_keywords):
+            winner_name = find_ceremony_entity_from_left_side_words(
+                left_side_words, 'celebrity')
+        elif any(k in AWARD_CATEGORIES_PICTURE_TYPE for k in matched_award_keywords):
+            winner_name = find_ceremony_entity_from_left_side_words(
+                left_side_words, 'picture')
+
+        if winner_name != '':
             return winner_name
 
     return None
