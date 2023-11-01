@@ -6,7 +6,7 @@ import editdistance
 from imdb import Cinemagoer
 import spacy
 
-from keywords import AWARD_CATEGORIES, AWARD_QUALIFIERS, extract_keywords_from_award_names
+from keywords import AWARD_CATEGORIES, AWARD_QUALIFIERS, extract_keywords_from_award_names, PRESENTER_KEYWORDS_PLURAL, PRESENTER_KEYWORDS_SINGULAR
 
 ia = Cinemagoer()
 nlp = spacy.load("en_core_web_sm")
@@ -276,6 +276,68 @@ def extract_awards(tweets):
     return awards
 
 
+def extract_winner(tweet):
+    """
+    Extracts winner from tweet.
+
+    Args:
+        tweet: Tweet to extract from.
+    Returns:
+        String representing extracted winner from tweet. None, if no winners are found.
+    """
+
+
+def extract_nominee(tweet):
+    """
+    Extracts winner from tweet.
+
+    Args:
+        tweet: Tweet to extract from.
+    Returns:
+        String representing extracted winner from tweet. None, if no winners are found.
+    """
+
+
+def find_first_matching_keyword(tweet, keywords):
+    """
+    Returns first matching keyword from set of keywords in tweet.
+
+    Args:
+        tweet: Tweet to search from.
+        keywords: Set of keywords to match.
+    Returns:
+        String representing first matching keyword in tweet. None, if no matches.
+    """
+    for keyword in keywords:
+        if keyword in tweet.text:
+            return keyword
+    return None
+
+
+def extract_presenters(tweet):
+    """
+    Extracts winner from tweet.
+
+    Args:
+        tweet: Tweet to extract from.
+    Returns:
+        String representing extracted winner from tweet. None, if no winners are found.
+    """
+    matching_keyword = find_first_matching_keyword(
+        tweet, PRESENTER_KEYWORDS_PLURAL)
+    if matching_keyword:
+        keyword_split = tweet.text.split(' ' + matching_keyword + ' ')
+        left_side_words = keyword_split[0].split()
+        if 'and' in left_side_words:
+            return []
+
+    matching_keyword = find_first_matching_keyword(
+        tweet, PRESENTER_KEYWORDS_SINGULAR)
+    if matching_keyword:
+        return []
+    return None
+
+
 def extract_using_award_names(tweets, award_names):
     """
     Extracts potential presenters, nominees, and winners from tweets based on official award names.
@@ -289,16 +351,38 @@ def extract_using_award_names(tweets, award_names):
     award_results = {}
     for award_name in award_names:
         award_results[award_name] = {
-            'presenters': [], 'nominees': [], 'winner': []}
+            'presenters': [], 'nominees': [], 'winners': []}
 
     awards_keywords = extract_keywords_from_award_names(award_names)
 
     for tweet in tweets:
         if ' award' not in tweet.text and 'best ' not in tweet.text:
             continue
-        # check if any of all keywords are in the tweets
-        # if so, I can pinpoint that this tweet may have some useful information about this award
-        # search for keywords about winner, nominees, and presenters
+
+        has_award_keywords = False
+        mentioned_award = ''
+        for award, keywords in awards_keywords.items():
+            if all(keyword in tweet.text for keyword in keywords):
+                has_award_keywords = True
+                mentioned_award = award
+                break
+
+        if not has_award_keywords:
+            continue
+
+        candidate_winner = extract_winner(tweet)
+        if candidate_winner:
+            award_results[mentioned_award]['winners'].append(candidate_winner)
+            continue
+        candidate_nominee = extract_nominee(tweet)
+        if candidate_nominee:
+            award_results[mentioned_award]['nominees'].append(
+                candidate_nominee)
+            continue
+        candidate_presenters = extract_presenters(tweet)
+        if candidate_presenters:
+            award_results[mentioned_award]['presenters'] += candidate_presenters
+            continue
 
     return award_results
 
@@ -368,6 +452,6 @@ def extract(tweets, award_names):
     preliminary_results = {}
     preliminary_results['hosts'] = extract_hosts(tweets)
     preliminary_results['awards'] = extract_awards(tweets)
-    preliminary_results['award_results'] = extract_using_award_names(
-        tweets, award_names)
+    # preliminary_results['award_results'] = extract_using_award_names(
+    #     tweets, award_names)
     return preliminary_results
