@@ -1,5 +1,7 @@
 """This file provides operations to merge related results and decide on final results."""
 
+import editdistance
+
 
 def merge_hosts(preliminary_hosts):
     """
@@ -20,9 +22,26 @@ def merge_hosts(preliminary_hosts):
     return final_hosts
 
 
+def merge_awards(preliminary_awards):
+    """
+    Merge preliminarily extracted awards into final results.
+
+    Args:
+        preliminary_awards: List of preliminarily extracted awards.
+    Returns:
+        List of merged awards.
+    """
+    final_awards = []
+    for preliminary_award in preliminary_awards:
+        if all(editdistance.eval(final_award, preliminary_award) >= 7 for final_award in final_awards):
+            final_awards.append(preliminary_award)
+
+    return final_awards
+
+
 def merge(preliminary_results):
     final_results = {}
     final_results['hosts'] = merge_hosts(preliminary_results['hosts'])
-    final_results['awards'] = preliminary_results['awards']
+    final_results['awards'] = merge_awards(preliminary_results['awards'])
 
     return final_results
