@@ -6,7 +6,7 @@ import editdistance
 from imdb import Cinemagoer
 import spacy
 
-from keywords import AWARD_CATEGORIES, AWARD_CATEGORIES_CELEBRITY_TYPE, AWARD_CATEGORIES_PICTURE_TYPE, AWARD_QUALIFIERS, extract_keywords_from_award_names, PRESENTER_KEYWORDS_PLURAL, PRESENTER_KEYWORDS_SINGULAR, WINNER_KEYWORDS
+from keywords import AWARD_CATEGORIES, AWARD_CATEGORIES_CELEBRITY_TYPE, AWARD_CATEGORIES_PICTURE_TYPE, AWARD_QUALIFIERS, extract_keywords_from_award_names, NOMINEE_KEYWORDS, PRESENTER_KEYWORDS_PLURAL, PRESENTER_KEYWORDS_SINGULAR, WINNER_KEYWORDS
 
 ia = Cinemagoer()
 nlp = spacy.load("en_core_web_sm")
@@ -71,16 +71,20 @@ def find_relevant_tweets(tweets, keywords):
     return relevant_tweets
 
 
-def find_celebrity_name_from_left_side_words(left_side_words):
+def find_ceremony_entity_from_left_side_words(left_side_words, type):
     """
-    Extract celebrity name from list of words going from right to left.
+    Extract ceremony entity from list of words going from right to left.
 
     Args:
         left_side_words: List of words to search from.
+        type: 'celebrity' or 'picture'.
     Returns:
-        String representing extracted celebrity name. None, if celebrity name
+        String representing extracted ceremony entity. None, if ceremony entity
         cannot be identified.
     """
+    if type != 'celebrity' and type != 'picture':
+        return None
+
     candidates = []
     for i in range(2, 5):
         if i > len(left_side_words):
@@ -90,7 +94,11 @@ def find_celebrity_name_from_left_side_words(left_side_words):
 
     candidate_search_results = []
     for candidate in candidates:
-        search_results = ia.search_person(candidate)
+        search_results = []
+        if type == 'celebrity':
+            search_results = ia.search_person(candidate)
+        elif type == 'picture':
+            search_results = ia.search_movie(candidate)
         if search_results:
             candidate_search_results.append(
                 search_results[0].get('name').lower())
@@ -113,16 +121,20 @@ def find_celebrity_name_from_left_side_words(left_side_words):
     return best_name
 
 
-def find_celebrity_name_from_right_side_words(right_side_words):
+def find_ceremony_entity_from_right_side_words(right_side_words, type):
     """
-    Extract celebrity name from list of words going from left to right.
+    Extract ceremony entity from list of words going from left to right.
 
     Args:
         right_side_words: List of words to search from.
+        type: 'celebrity' or 'picture'.
     Returns:
-        String representing extracted celebrity name. None, if celebrity name
+        String representing extracted ceremony entity. None, if ceremony entity
         cannot be identified.
     """
+    if type != 'celebrity' and type != 'picture':
+        return None
+
     candidates = []
     for i in range(2, 5):
         if i >= len(right_side_words):
@@ -132,7 +144,11 @@ def find_celebrity_name_from_right_side_words(right_side_words):
 
     candidate_search_results = []
     for candidate in candidates:
-        search_results = ia.search_person(candidate)
+        search_results = []
+        if type == 'celebrity':
+            search_results = ia.search_person(candidate)
+        elif type == 'picture':
+            search_results = ia.search_movie(candidate)
         if search_results:
             candidate_search_results.append(
                 search_results[0].get('name').lower())
@@ -186,16 +202,16 @@ def extract_hosts(tweets):
                     hosts.append(left_candidate_search_result)
 
             right_host_words = and_split[1].split()
-            right_host_name = find_celebrity_name_from_right_side_words(
-                right_host_words)
+            right_host_name = find_ceremony_entity_from_right_side_words(
+                right_host_words, 'celebrity')
             if right_host_name:
                 hosts.append(right_host_name)
         elif 'hosted by ' in tweet.text:
             hosted_by_split = tweet.text.split('hosted by ')
             right_side_words = hosted_by_split[1].split()
 
-            host_name = find_celebrity_name_from_right_side_words(
-                right_side_words)
+            host_name = find_ceremony_entity_from_right_side_words(
+                right_side_words, 'celebrity')
             if host_name:
                 hosts.append(host_name)
         elif re.search("hosts [\w\s]+ and [\w\s]+", tweet.text):
@@ -214,16 +230,16 @@ def extract_hosts(tweets):
                     hosts.append(left_candidate_search_result)
 
             right_host_words = and_split[1].split()
-            right_host_name = find_celebrity_name_from_right_side_words(
-                right_host_words)
+            right_host_name = find_ceremony_entity_from_right_side_words(
+                right_host_words, 'celebrity')
             if right_host_name:
                 hosts.append(right_host_name)
         elif 'host ' in tweet.text:
             hosted_by_split = tweet.text.split('host ')
             right_side_words = hosted_by_split[1].split()
 
-            host_name = find_celebrity_name_from_right_side_words(
-                right_side_words)
+            host_name = find_ceremony_entity_from_right_side_words(
+                right_side_words, 'celebrity')
             if host_name:
                 hosts.append(host_name)
     return hosts
@@ -246,8 +262,8 @@ def extract_awards(tweets):
             award_split = tweet.text.split(' award')
             left_side_words = award_split[0].split()
 
-            celebrity_award_name = find_celebrity_name_from_left_side_words(
-                left_side_words)
+            celebrity_award_name = find_ceremony_entity_from_left_side_words(
+                left_side_words, 'celebrity')
             if celebrity_award_name:
                 awards.append(celebrity_award_name + ' award')
 
@@ -280,12 +296,13 @@ def extract_awards(tweets):
     return awards
 
 
-def extract_winner(tweet):
+def extract_winner(tweet, matched_award_keywords):
     """
     Extracts winner from tweet.
 
     Args:
         tweet: Tweet to extract from.
+        matched_award_keywords: List of must-have award keywords that the given tweet matched with.
     Returns:
         String representing extracted winner from tweet. None, if no winner is found.
     """
@@ -293,7 +310,8 @@ def extract_winner(tweet):
     if matching_keyword:
         keyword_split = tweet.text.split(' ' + matching_keyword + ' ')
         left_side_words = keyword_split[0].split()
-        winner_name = find_celebrity_name_from_left_side_words(left_side_words)
+        winner_name = find_ceremony_entity_from_left_side_words(
+            left_side_words, 'celebrity')
         if winner_name:
             return winner_name
 
@@ -364,8 +382,8 @@ def extract_presenters(tweet, award_names):
                     presenters.append(right_candidate_search_result)
 
             left_presenter_words = and_split[0].split()
-            left_presenter_name = find_celebrity_name_from_left_side_words(
-                left_presenter_words)
+            left_presenter_name = find_ceremony_entity_from_left_side_words(
+                left_presenter_words, 'celebrity')
             if left_presenter_name:
                 presenters.append(left_presenter_name)
             return presenters
@@ -375,8 +393,8 @@ def extract_presenters(tweet, award_names):
     if matching_keyword:
         keyword_split = tweet.text.split(' ' + matching_keyword + ' ')
         left_side_words = keyword_split[0].split()
-        presenter_name = find_celebrity_name_from_left_side_words(
-            left_side_words)
+        presenter_name = find_ceremony_entity_from_left_side_words(
+            left_side_words, 'celebrity')
         if presenter_name and presenter_name + ' award' not in award_names:
             return [presenter_name]
     return []
