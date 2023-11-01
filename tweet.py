@@ -6,7 +6,7 @@ class Tweet:
         self.user = user
         self.hashtags = []
 
-    def applyTextPreprocessing(self, f):
+    def apply_text_processsing(self, f):
         """
         Apply text processing function onto the text of this tweet.
 

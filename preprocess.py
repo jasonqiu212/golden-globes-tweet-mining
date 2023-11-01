@@ -62,11 +62,12 @@ def get_hashtags(str):
 
 def preprocess(tweets):
     for tweet in tweets:
-        tweet.applyTextPreprocessing(fix_mojibake)
-        tweet.applyTextPreprocessing(transform_to_ASCII)
-        tweet.applyTextPreprocessing(remove_extra_whitespace)
-        tweet.applyTextPreprocessing(remove_URLs)
-        tweet.applyTextPreprocessing(process_ats)
+        tweet.apply_text_processsing(fix_mojibake)
+        tweet.apply_text_processsing(transform_to_ASCII)
+        tweet.apply_text_processsing(remove_extra_whitespace)
+        tweet.apply_text_processsing(remove_URLs)
+        tweet.apply_text_processsing(process_ats)
         tweet.hashtags = get_hashtags(tweet.text)
-        tweet.applyTextPreprocessing(process_hashtags)
+        tweet.apply_text_processsing(process_hashtags)
+        tweet.apply_text_processsing(lambda s: s.lower())
     return list(filter(lambda t: is_english(t.text), tweets))
