@@ -53,31 +53,17 @@ def process_hashtags(str):
     return re.sub("#(\S*)", remove_symbol_and_split, str)
 
 
-def get_hashtags(str):
-    hashtags = re.findall(r'#\w+', str)
-    list = []
-    for i in hashtags:
-        word_without_hashtag = i.lstrip('#')
-        formatted_word = re.sub(
-            r'([a-z])([A-Z])', r'\1 \2', word_without_hashtag)
-        list.append(formatted_word)
-    return list
-
-
 def replace_ampersand(str):
     return re.sub("&", "and", str)
 
 
-def preprocess(tweets):
-    for tweet in tweets:
-        tweet.apply_text_processsing(fix_mojibake)
-        tweet.apply_text_processsing(transform_to_ASCII)
-        tweet.apply_text_processsing(remove_extra_whitespace)
-        tweet.apply_text_processsing(remove_URLs)
-        tweet.apply_text_processsing(process_ats)
-        tweet.hashtags = get_hashtags(tweet.text)
-        tweet.apply_text_processsing(process_hashtags)
-        tweet.apply_text_processsing(lambda s: s.lower())
-        tweet.apply_text_processsing(replace_ampersand)
-    print('1/9: Finished preprocessing tweets')
-    return list(filter(lambda t: is_english(t.text), tweets))
+def preprocess(str):
+    str = fix_mojibake(str)
+    str = transform_to_ASCII(str)
+    str = remove_extra_whitespace(str)
+    str = remove_URLs(str)
+    str = process_ats(str)
+    str = process_hashtags(str)
+    str = str.lower()
+    str = replace_ampersand(str)
+    return str
