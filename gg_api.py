@@ -1,7 +1,6 @@
 from extract import extract
-from file import load_awards, load_tweets, read_results, write_human_readable_results, write_results
+from file import load_awards, read_results, write_human_readable_results, write_results
 from merge import merge
-from preprocess import preprocess
 
 
 def get_hosts(year):
@@ -57,9 +56,8 @@ def main():
     TWEETS_FILE_NAME = 'gg{}.json'.format(YEAR)
     ANSWER_FILE_NAME = 'gg{}answers.json'.format(YEAR)
 
-    tweets = preprocess(load_tweets(TWEETS_FILE_NAME))
     official_award_names = load_awards(ANSWER_FILE_NAME)
-    preliminary_results = extract(tweets, official_award_names)
+    preliminary_results = extract(TWEETS_FILE_NAME, official_award_names)
     final_results = merge(preliminary_results)
     write_results(final_results, YEAR)
     write_human_readable_results(final_results, YEAR)
