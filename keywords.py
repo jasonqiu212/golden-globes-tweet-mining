@@ -10,7 +10,8 @@ WINNERS = ["award", "winner", "won", "receives", "recipient",
 
 NOMINEES = []
 
-PRESENTERS = []
+PRESENTER_KEYWORDS_PLURAL = {'award', 'present', 'to present'}
+PRESENTER_KEYWORDS_SINGULAR = {'awards', 'presents', 'to present'}
 
 
 def extract_keywords_from_award_names(award_names):
