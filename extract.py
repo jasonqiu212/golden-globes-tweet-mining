@@ -179,6 +179,8 @@ def extract_hosts(tweets):
     """
     hosts = []
     for tweet in tweets:
+        if len(hosts) > 20:
+            break
         if re.search("hosted by [\w\s]+ and [\w\s]+", tweet.text):
             hosted_by_split = tweet.text.split('hosted by ')
             right_side_words = hosted_by_split[1].split()
@@ -251,6 +253,8 @@ def extract_awards(tweets):
     """
     awards = []
     for tweet in tweets:
+        if len(awards) > 30:
+            break
         if ' award' in tweet.text:
             award_split = tweet.text.split(' award')
             left_side_words = award_split[0].split()
