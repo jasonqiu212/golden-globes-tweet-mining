@@ -60,6 +60,7 @@ def write_results(data, year):
     json_object = json.dumps(data, indent=4)
     with open("gg{}results.json".format(year), "w") as f:
         f.write(json_object)
+    print('Finished writing to JSON result file.')
 
 
 def write_human_readable_results(data, year):
@@ -82,7 +83,8 @@ def write_human_readable_results(data, year):
         lines.append('')
 
     with open("gg{}results_humanreadable.txt".format(year), "w") as f:
-        f.writelines(lines)
+        f.writelines(line + '\n' for line in lines)
+    print('Finished writing to human readable result file.')
 
 
 def read_results(year, component):
