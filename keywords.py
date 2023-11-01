@@ -5,6 +5,8 @@ AWARD_CATEGORIES = {'film', 'picture', 'television', 'series',
 AWARD_QUALIFIERS = {'picture', 'television', 'mini-series', 'series',
                     'comedy', 'musical', 'drama', 'animated', 'supporting', 'foreign', 'language'}
 
+WINNER_KEYWORDS = {'wins', 'receives'}
+
 WINNERS = ["award", "winner", "won", "receives", "recipient",
            "nominee", "nominated", "prize", "congratulations", "honored", "got"]
 

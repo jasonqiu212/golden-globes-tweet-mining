@@ -6,7 +6,7 @@ import editdistance
 from imdb import Cinemagoer
 import spacy
 
-from keywords import AWARD_CATEGORIES, AWARD_QUALIFIERS, extract_keywords_from_award_names, PRESENTER_KEYWORDS_PLURAL, PRESENTER_KEYWORDS_SINGULAR
+from keywords import AWARD_CATEGORIES, AWARD_QUALIFIERS, extract_keywords_from_award_names, PRESENTER_KEYWORDS_PLURAL, PRESENTER_KEYWORDS_SINGULAR, WINNER_KEYWORDS
 
 ia = Cinemagoer()
 nlp = spacy.load("en_core_web_sm")
@@ -289,6 +289,15 @@ def extract_winner(tweet):
     Returns:
         String representing extracted winner from tweet. None, if no winners are found.
     """
+    matching_keyword = find_first_matching_keyword(tweet, WINNER_KEYWORDS)
+    if matching_keyword:
+        keyword_split = tweet.text.split(' ' + matching_keyword + ' ')
+        left_side_words = keyword_split[0].split()
+        winner_name = find_celebrity_name_from_left_side_words(left_side_words)
+        if winner_name:
+            return winner_name
+
+    return None
 
 
 def extract_nominee(tweet):
