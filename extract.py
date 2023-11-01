@@ -71,9 +71,51 @@ def find_relevant_tweets(tweets, keywords):
     return relevant_tweets
 
 
+def find_celebrity_name_from_left_side_words(left_side_words):
+    """
+    Extract celebrity name from list of words going from right to left.
+
+    Args:
+        left_side_words: List of words to search from.
+    Returns:
+        String representing extracted celebrity name. None, if celebrity name
+        cannot be identified.
+    """
+    candidates = []
+    for i in range(2, 5):
+        if i > len(left_side_words):
+            break
+        candidates.append(
+            " ".join(left_side_words[len(left_side_words) - i:]))
+
+    candidate_search_results = []
+    for candidate in candidates:
+        search_results = ia.search_person(candidate)
+        if search_results:
+            candidate_search_results.append(
+                search_results[0].get('name').lower())
+        else:
+            candidate_search_results.append(None)
+
+    best_name, least_edit_distance = '', 999999
+    for i in range(len(candidates)):
+        if candidate_search_results[i] == None:
+            continue
+        edit_distance = editdistance.eval(
+            candidates[i], candidate_search_results[i])
+        if edit_distance < least_edit_distance:
+            best_name = candidate_search_results[i]
+            least_edit_distance = edit_distance
+
+    if least_edit_distance > 10:
+        return None
+
+    return best_name
+
+
 def find_celebrity_name_from_right_side_words(right_side_words):
     """
-    Extract celebrity name from list of words starting from the right.
+    Extract celebrity name from list of words going from left to right.
 
     Args:
         right_side_words: List of words to search from.
@@ -197,39 +239,13 @@ def extract_awards(tweets):
     awards = []
     for tweet in tweets:
         if ' award' in tweet.text:
-            candidates = []
             award_split = tweet.text.split(' award')
             left_side_words = award_split[0].split()
 
-            for i in range(1, 4):
-                if i >= len(left_side_words):
-                    break
-                candidates.append(
-                    " ".join(left_side_words[len(left_side_words) - i - 1:]))
-
-            candidate_search_results = []
-            for candidate in candidates:
-                search_results = ia.search_person(candidate)
-                if search_results:
-                    candidate_search_results.append(
-                        search_results[0].get('name').lower())
-                else:
-                    candidate_search_results.append(None)
-
-            best_name, least_edit_distance = '', 999999
-            for i in range(len(candidates)):
-                if candidate_search_results[i] == None:
-                    continue
-                edit_distance = editdistance.eval(
-                    candidates[i], candidate_search_results[i])
-                if edit_distance < least_edit_distance:
-                    best_name = candidate_search_results[i]
-                    least_edit_distance = edit_distance
-
-            if least_edit_distance > 10:
-                continue
-
-            awards.append(best_name + ' award')
+            celebrity_award_name = find_celebrity_name_from_left_side_words(
+                left_side_words)
+            if celebrity_award_name:
+                awards.append(celebrity_award_name + ' award')
 
         elif 'best ' in tweet.text:
             best_split = tweet.text.split('best ')
