@@ -318,12 +318,13 @@ def find_first_matching_keyword(tweet, keywords):
     return None
 
 
-def extract_presenters(tweet):
+def extract_presenters(tweet, award_names):
     """
     Extracts presenters from tweet.
 
     Args:
         tweet: Tweet to extract from.
+        award_names: List of official award names.
     Returns:
         List of extracted presenters from tweet. Empty list, if no presenters are found.
     """
@@ -359,7 +360,7 @@ def extract_presenters(tweet):
         left_side_words = keyword_split[0].split()
         presenter_name = find_celebrity_name_from_left_side_words(
             left_side_words)
-        if presenter_name:
+        if presenter_name and presenter_name + ' award' not in award_names:
             return [presenter_name]
     return []
 
@@ -388,10 +389,33 @@ def extract_using_award_names(tweets, award_names):
         has_award_keywords = False
         mentioned_award = ''
         for award, keywords in awards_keywords.items():
-            if all(keyword in tweet.text for keyword in keywords):
+            must_have = keywords['must_have']
+            qualifiers = keywords['qualifiers']
+
+            if all(mh in tweet.text for mh in must_have) and all(q in tweet.text for q in qualifiers):
                 has_award_keywords = True
                 mentioned_award = award
                 break
+
+        if not has_award_keywords:
+            for award, keywords in awards_keywords.items():
+                must_have = keywords['must_have']
+                qualifiers = keywords['qualifiers']
+
+                if all(mh in tweet.text for mh in must_have) and any(q in tweet.text for q in qualifiers):
+                    has_award_keywords = True
+                    mentioned_award = award
+                    break
+
+        if not has_award_keywords:
+            for award, keywords in awards_keywords.items():
+                must_have = keywords['must_have']
+                qualifiers = keywords['qualifiers']
+
+                if all(mh in tweet.text for mh in must_have):
+                    has_award_keywords = True
+                    mentioned_award = award
+                    break
 
         if not has_award_keywords:
             continue
@@ -405,7 +429,7 @@ def extract_using_award_names(tweets, award_names):
             award_results[mentioned_award]['nominees'].append(
                 candidate_nominee)
             continue
-        candidate_presenters = extract_presenters(tweet)
+        candidate_presenters = extract_presenters(tweet, award_names)
         award_results[mentioned_award]['presenters'] += candidate_presenters
 
     return award_results
@@ -476,6 +500,6 @@ def extract(tweets, award_names):
     preliminary_results = {}
     preliminary_results['hosts'] = extract_hosts(tweets)
     preliminary_results['awards'] = extract_awards(tweets)
-    # preliminary_results['award_results'] = extract_using_award_names(
-    #     tweets, award_names)
+    preliminary_results['award_results'] = extract_using_award_names(
+        tweets, award_names)
     return preliminary_results

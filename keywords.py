@@ -25,21 +25,22 @@ def extract_keywords_from_award_names(award_names):
     """
     keywords = {}
     for award_name in award_names:
-        keywords[award_name] = []
+        keywords[award_name] = {'must_have': [], 'qualifiers': []}
 
         if ' award' in award_name:
-            keywords[award_name].append(award_name)
+            keywords[award_name]['must_have'].append(award_name)
             continue
 
-        keywords[award_name].append('best')
+        keywords[award_name]['must_have'].append('best')
 
         words = award_name.split()
         for word in words:
             if word in AWARD_CATEGORIES:
-                keywords[award_name].append(word)
+                keywords[award_name]['must_have'].append(word)
+                break
 
         for word in words:
             if word in AWARD_QUALIFIERS:
-                keywords[award_name].append(word)
+                keywords[award_name]['qualifiers'].append(word)
 
     return keywords
