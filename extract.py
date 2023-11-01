@@ -86,7 +86,7 @@ def find_ceremony_entity_from_left_side_words(left_side_words, type):
         return None
 
     candidates = []
-    for i in range(2, 5):
+    for i in range(2, 5 if type == 'celebrity' else 8):
         if i > len(left_side_words):
             break
         candidates.append(
@@ -136,7 +136,7 @@ def find_ceremony_entity_from_right_side_words(right_side_words, type):
         return None
 
     candidates = []
-    for i in range(2, 5):
+    for i in range(2, 5 if type == 'celebrity' else 8):
         if i >= len(right_side_words):
             break
         candidates.append(
