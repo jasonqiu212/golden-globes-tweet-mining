@@ -339,7 +339,7 @@ def find_closest_matching_ceremony_entity(tweet, type):
             if i + j >= len(words):
                 break
 
-            candidates.append(words[i:i + j])
+            candidates.append(' '.join(words[i:i + j]))
 
     return get_best_ceremony_entity(candidates, type)
 
@@ -480,18 +480,23 @@ def extract_using_award_names(tweets, award_names):
         if not has_award_keywords:
             continue
 
-        candidate_winner = extract_winner(tweet)
+        candidate_winner = extract_winner(
+            tweet, awards_keywords[mentioned_award]['must_have'])
         if candidate_winner:
             award_results[mentioned_award]['winners'].append(candidate_winner)
             continue
+
+        candidate_presenters = extract_presenters(tweet, award_names)
+        if len(candidate_presenters) != 0:
+            award_results[mentioned_award]['presenters'] += candidate_presenters
+            continue
+
         candidate_nominee = extract_nominee(
             tweet, awards_keywords[mentioned_award]['must_have'])
         if candidate_nominee:
             award_results[mentioned_award]['nominees'].append(
                 candidate_nominee)
             continue
-        candidate_presenters = extract_presenters(tweet, award_names)
-        award_results[mentioned_award]['presenters'] += candidate_presenters
 
     return award_results
 
