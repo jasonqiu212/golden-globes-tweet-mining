@@ -177,11 +177,13 @@ def extract_hosts(tweets):
             and_split = ' '.join(right_side_words).split(' and ')
 
             left_candidate = and_split[0]
-            left_candidate_search_result = ia.search_person(
-                left_candidate)[0].get('name').lower()
+            search_result = ia.search_person(left_candidate)
+            if search_result:
+                left_candidate_search_result = search_result[0].get(
+                    'name').lower()
 
-            if editdistance.eval(left_candidate, left_candidate_search_result) < 10:
-                hosts.append(left_candidate_search_result)
+                if editdistance.eval(left_candidate, left_candidate_search_result) < 10:
+                    hosts.append(left_candidate_search_result)
 
             right_host_words = and_split[1].split()
             right_host_name = find_celebrity_name_from_right_side_words(
@@ -203,11 +205,13 @@ def extract_hosts(tweets):
             and_split = ' '.join(right_side_words).split(' and ')
 
             left_candidate = and_split[0]
-            left_candidate_search_result = ia.search_person(
-                left_candidate)[0].get('name').lower()
+            search_result = ia.search_person(left_candidate)
+            if search_result:
+                left_candidate_search_result = search_result[0].get(
+                    'name').lower()
 
-            if editdistance.eval(left_candidate, left_candidate_search_result) < 10:
-                hosts.append(left_candidate_search_result)
+                if editdistance.eval(left_candidate, left_candidate_search_result) < 10:
+                    hosts.append(left_candidate_search_result)
 
             right_host_words = and_split[1].split()
             right_host_name = find_celebrity_name_from_right_side_words(
@@ -316,12 +320,12 @@ def find_first_matching_keyword(tweet, keywords):
 
 def extract_presenters(tweet):
     """
-    Extracts winner from tweet.
+    Extracts presenters from tweet.
 
     Args:
         tweet: Tweet to extract from.
     Returns:
-        String representing extracted winner from tweet. None, if no winners are found.
+        List of extracted presenters from tweet. Empty list, if no presenters are found.
     """
     matching_keyword = find_first_matching_keyword(
         tweet, PRESENTER_KEYWORDS_PLURAL)
@@ -329,13 +333,35 @@ def extract_presenters(tweet):
         keyword_split = tweet.text.split(' ' + matching_keyword + ' ')
         left_side_words = keyword_split[0].split()
         if 'and' in left_side_words:
-            return []
+            presenters = []
+            and_split = ' '.join(left_side_words).split(' and ')
+
+            right_candidate = and_split[1]
+            search_result = ia.search_person(right_candidate)
+            if search_result:
+                right_candidate_search_result = search_result[0].get(
+                    'name').lower()
+
+                if editdistance.eval(right_candidate, right_candidate_search_result) < 10:
+                    presenters.append(right_candidate_search_result)
+
+            left_presenter_words = and_split[0].split()
+            left_presenter_name = find_celebrity_name_from_left_side_words(
+                left_presenter_words)
+            if left_presenter_name:
+                presenters.append(left_presenter_name)
+            return presenters
 
     matching_keyword = find_first_matching_keyword(
         tweet, PRESENTER_KEYWORDS_SINGULAR)
     if matching_keyword:
-        return []
-    return None
+        keyword_split = tweet.text.split(' ' + matching_keyword + ' ')
+        left_side_words = keyword_split[0].split()
+        presenter_name = find_celebrity_name_from_left_side_words(
+            left_side_words)
+        if presenter_name:
+            return [presenter_name]
+    return []
 
 
 def extract_using_award_names(tweets, award_names):
@@ -380,9 +406,7 @@ def extract_using_award_names(tweets, award_names):
                 candidate_nominee)
             continue
         candidate_presenters = extract_presenters(tweet)
-        if candidate_presenters:
-            award_results[mentioned_award]['presenters'] += candidate_presenters
-            continue
+        award_results[mentioned_award]['presenters'] += candidate_presenters
 
     return award_results
 
