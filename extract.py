@@ -1,5 +1,8 @@
 from collections import Counter
 from datetime import datetime, timedelta
+
+import editdistance
+from imdb import Cinemagoer
 import spacy
 
 nlp = spacy.load("en_core_web_sm")
@@ -85,9 +88,40 @@ def extract_awards(tweets):
     Returns:
         List of potential awards.
     """
+    ia = Cinemagoer()
     awards = []
-    # if phrase contains 'best' + AWARD_CATEGORIES + AWARD_QUALIFIERS, add into result
-    # if phrase contains PERSON_NAME + 'award', add into result
+    for tweet in tweets:
+        if ' award' in tweet.text:
+            candidates = []
+            award_split = tweet.text.split(' award')
+            left_side_words = award_split[0].split()
+
+            for i in range(1, 4):
+                candidates.append(
+                    " ".join(left_side_words[len(left_side_words) - i - 1:]))
+
+            candidate_search_results = []
+            for candidate in candidates:
+                candidate_search_results.append(
+                    ia.search_person(candidate)[0].get('name').lower())
+
+            best_name, least_edit_distance = '', 999999
+            for i in range(len(candidates)):
+                edit_distance = editdistance.eval(
+                    candidate[i], candidate_search_results[i])
+                if edit_distance < least_edit_distance:
+                    best_name = candidate_search_results[i]
+                    least_edit_distance = edit_distance
+
+            if least_edit_distance > 10:
+                continue
+
+            awards.append(best_name + ' award')
+
+        elif 'best ' in tweet.text:
+            best_split = tweet.text.split('best ')
+            right_side_words = best_split[1].split()
+            # if phrase contains 'best' + AWARD_CATEGORIES + AWARD_QUALIFIERS, add into result
     return awards
 
 
