@@ -60,6 +60,10 @@ def get_hashtags(str):
     return list
 
 
+def replace_ampersand(str):
+    return re.sub("&", "and", str)
+
+
 def preprocess(tweets):
     for tweet in tweets:
         tweet.apply_text_processsing(fix_mojibake)
@@ -70,4 +74,5 @@ def preprocess(tweets):
         tweet.hashtags = get_hashtags(tweet.text)
         tweet.apply_text_processsing(process_hashtags)
         tweet.apply_text_processsing(lambda s: s.lower())
+        tweet.apply_text_processsing(replace_ampersand)
     return list(filter(lambda t: is_english(t.text), tweets))
