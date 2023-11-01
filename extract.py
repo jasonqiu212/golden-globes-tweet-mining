@@ -5,6 +5,8 @@ import editdistance
 from imdb import Cinemagoer
 import spacy
 
+from keywords import AWARD_CATEGORIES, AWARD_QUALIFIERS
+
 nlp = spacy.load("en_core_web_sm")
 
 # to use this function:
@@ -97,6 +99,8 @@ def extract_awards(tweets):
             left_side_words = award_split[0].split()
 
             for i in range(1, 4):
+                if i >= len(left_side_words):
+                    break
                 candidates.append(
                     " ".join(left_side_words[len(left_side_words) - i - 1:]))
 
@@ -108,7 +112,7 @@ def extract_awards(tweets):
             best_name, least_edit_distance = '', 999999
             for i in range(len(candidates)):
                 edit_distance = editdistance.eval(
-                    candidate[i], candidate_search_results[i])
+                    candidates[i], candidate_search_results[i])
                 if edit_distance < least_edit_distance:
                     best_name = candidate_search_results[i]
                     least_edit_distance = edit_distance
@@ -121,7 +125,29 @@ def extract_awards(tweets):
         elif 'best ' in tweet.text:
             best_split = tweet.text.split('best ')
             right_side_words = best_split[1].split()
-            # if phrase contains 'best' + AWARD_CATEGORIES + AWARD_QUALIFIERS, add into result
+
+            matched_category_index = -1
+            for award_category in AWARD_CATEGORIES:
+                if award_category in right_side_words:
+                    matched_category_index = right_side_words.index(
+                        award_category)
+                    break
+
+            if matched_category_index == -1:
+                continue
+
+            matched_qualifier_index = -1
+            for i in range(len(right_side_words) - 1, matched_category_index - 1, -1):
+                if right_side_words[i] in AWARD_QUALIFIERS:
+                    matched_qualifier_index = i
+                    break
+
+            award_end_index = matched_qualifier_index
+            if matched_qualifier_index == -1:
+                award_end_index = matched_category_index
+
+            awards.append(
+                'best ' + ' '.join(right_side_words[:award_end_index + 1]))
     return awards
 
 
