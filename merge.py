@@ -71,14 +71,19 @@ def merge_awards(preliminary_awards):
 
 
 def merge_nominees(preliminary_nominees, final_winner):
-    # option 1: use winner to eliminate nominees (if winner is more accurate than nominee)
-    # if none of the winners are inside nominees, just display top 4 most voted nominees
+    """
+    Merge preliminarily extracted nominees into final results by removing winner from
+    preliminary results and getting top 4 candidates.
 
-    # option 2: use nominees to eliminate winner (if nominee is more accurate than winner)
-    # if none of the winners are inside nominees, get most frequently mentioned nominee
-    # depends on which one is more accurate
-    final_nominees = []
-    return final_nominees
+    Args:
+        preliminary_nominees: List of preliminarily extracted nominees.
+        final_winner: String representing the final winner.
+    Returns:
+        List of merged awards.
+    """
+    while preliminary_nominees.count(final_winner) > 0:
+        preliminary_nominees.remove(final_winner)
+    return merge_through_voting_highest_k_results(preliminary_nominees, 4)
 
 
 def merge_award_results(preliminary_award_results):
