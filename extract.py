@@ -633,6 +633,5 @@ def extract(file_name, award_names, time_limit):
 
     preliminary_results = {'hosts': hosts,
                            'awards': awards, 'award_results': award_results, 'best_dressed': best_dressed}
-    print(preliminary_results)
-    print('1/6: Finished extracting information from tweets')
+    print('1/4: Finished extracting information from tweets')
     return preliminary_results

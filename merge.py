@@ -110,13 +110,8 @@ def merge_award_results(preliminary_award_results):
 def merge(preliminary_results):
     final_results = {}
     final_results['hosts'] = merge_through_voting(preliminary_results['hosts'])
-    print('2/6: Finished merging host results')
 
     final_results['awards'] = merge_awards(preliminary_results['awards'])
-    print('3/6: Finished merging award results')
-
-    final_results['award_results'] = merge_award_results(
-        preliminary_results['award_results'])
 
     final_results['best_dressed'] = ''
     merged_best_dressed = merge_through_voting_highest_k_results(
@@ -124,6 +119,9 @@ def merge(preliminary_results):
     if merged_best_dressed:
         final_results['best_dressed'] = merged_best_dressed[0]
 
-    print('4/6: Finished merging presenters, winners, and nominees')
+    final_results['award_results'] = merge_award_results(
+        preliminary_results['award_results'])
+
+    print('2/4: Finished merging results')
 
     return final_results
