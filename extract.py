@@ -394,7 +394,7 @@ def extract_nominees(tweet, matched_award_keywords):
     matching_keyword = find_first_matching_keyword(
         tweet, NOMINEE_KEYWORDS)
     if matching_keyword:
-        keyword_split = tweet.split(' ' + matching_keyword + ' ')
+        keyword_split = tweet.split(matching_keyword)
         left_side_words = keyword_split[0].split()
         right_side_words = keyword_split[1].split()
         left_nominee, right_nominee = '', ''
