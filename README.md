@@ -42,13 +42,21 @@ TWEETS_FILE_NAME = 'gg{}.json'.format(YEAR)
 ANSWER_FILE_NAME = 'gg{}answers.json'.format(YEAR)
 ```
 
-4. Extract the information from the tweets.
+> If you wish to run the extraction on a smaller set of tweets, we created a small representative dataset called `gg2013-subset.json`. To use this smaller dataset, replace `TWEETS_FILE_NAME` with `gg2013-subset.json`.
+
+4. Extracting information from tweets takes a long time. Thus, we included a time limit for running the extraction. If you wish change the time limit for extracting information, change the corresponding constant under the `main` function in `gg_api.py`. The current time limit is 15 minutes, or 900 seconds.
+
+```
+TIME_LIMIT = 900
+```
+
+5. Extract the information from the tweets.
 
 ```
 $ python3 gg_api.py
 ```
 
-5. A file called `gg{YEAR}results.json` containing the results in a JSON format will be generated in the root directory. A file called `gg{YEAR}results_humanreadable.txt` containing the results in a human readable format will also be generated.
+6. A file called `gg{YEAR}results.json` containing the results in a JSON format will be generated in the root directory. A file called `gg{YEAR}results_humanreadable.txt` containing the results in a human readable format will also be generated.
 
 Congratulations! You have successfully mined and extracted information from tweets about award ceremonies.
 
