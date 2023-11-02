@@ -19,7 +19,7 @@ def merge_through_voting(preliminary_results):
     for preliminary_result in preliminary_results:
         votes[preliminary_result] = votes.get(preliminary_result, 0) + 1
     for host, vote in votes.items():
-        if vote > 7:
+        if vote > 3:
             final_results.append(host)
     return final_results
 
@@ -110,13 +110,13 @@ def merge_award_results(preliminary_award_results):
 def merge(preliminary_results):
     final_results = {}
     final_results['hosts'] = merge_through_voting(preliminary_results['hosts'])
-    print('5/9: Finished merging host results')
+    print('2/6: Finished merging host results')
 
     final_results['awards'] = merge_awards(preliminary_results['awards'])
-    print('6/9: Finished merging award results')
+    print('3/6: Finished merging award results')
 
     final_results['award_results'] = merge_award_results(
         preliminary_results['award_results'])
-    print('7/9: Finished merging presenters, winners, and nominees')
+    print('4/6: Finished merging presenters, winners, and nominees')
 
     return final_results

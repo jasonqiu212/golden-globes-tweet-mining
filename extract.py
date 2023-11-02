@@ -565,7 +565,7 @@ def extract_using_award_names(tweet, award_names, award_results):
 #     return []
 
 
-def extract(file_name, award_names):
+def extract(file_name, award_names, time_limit):
     """
     Extracts hosts, award names, presenters, nominees, and
     winners from tweets.
@@ -573,6 +573,7 @@ def extract(file_name, award_names):
     Args:
         file_name: File name of data file containing tweets.
         award_names: List of official award names.
+        time_limit: Time limit for extracting tweets in seconds.
     Returns:
         Dictionary of preliminary results extracted from tweets.
     """
@@ -589,8 +590,8 @@ def extract(file_name, award_names):
 
         count = 0
         for tweet in tweets:
-            if time.time() - start_time >= 60:
-                print('15 minute time limit reached for extraction')
+            if time.time() - start_time >= time_limit:
+                print('{} seconds time limit reached for extraction'.format(time_limit))
                 break
 
             if count % 50 == 0:
@@ -615,5 +616,6 @@ def extract(file_name, award_names):
 
     preliminary_results = {'hosts': hosts,
                            'awards': awards, 'award_results': award_results}
-
+    print(preliminary_results)
+    print('1/6: Finished extracting information from tweets')
     return preliminary_results

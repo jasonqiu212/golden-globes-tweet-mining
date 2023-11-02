@@ -56,8 +56,12 @@ def main():
     TWEETS_FILE_NAME = 'gg{}.json'.format(YEAR)
     ANSWER_FILE_NAME = 'gg{}answers.json'.format(YEAR)
 
+    # Change the following constant to set the time limit for extracting tweets
+    TIME_LIMIT = 900
+
     official_award_names = load_awards(ANSWER_FILE_NAME)
-    preliminary_results = extract(TWEETS_FILE_NAME, official_award_names)
+    preliminary_results = extract(
+        TWEETS_FILE_NAME, official_award_names, TIME_LIMIT)
     final_results = merge(preliminary_results)
     write_results(final_results, YEAR)
     write_human_readable_results(final_results, YEAR)
