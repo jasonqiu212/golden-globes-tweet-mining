@@ -2,25 +2,6 @@
 
 import json
 
-from tweet import Tweet
-
-
-def load_tweets(file_name):
-    """
-    Loads tweets from JSON data file.
-
-    Args:
-        file_name: File name of JSON data file.
-    Returns:
-        List of tweets from JSON file.
-    """
-    # Uncomment following line to try on smaller subset of datafile
-    with open(file_name) as json_file:
-        # with open("gg{}-subset.json".format(2013)) as json_file:
-        data = json.load(json_file)
-
-        return list(map(lambda t: Tweet(t['text'], t['user']['screen_name']), data))
-
 
 def load_awards(file_name):
     """

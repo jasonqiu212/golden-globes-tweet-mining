@@ -10,11 +10,6 @@ AWARD_QUALIFIERS = {'picture', 'television', 'mini-series', 'series',
 
 WINNER_KEYWORDS = {'wins', 'receives'}
 
-WINNERS = ["award", "winner", "won", "receives", "recipient",
-           "nominee", "nominated", "prize", "congratulations", "honored", "got"]
-
-NOMINEES = []
-
 PRESENTER_KEYWORDS_PLURAL = {'award', 'present', 'to present'}
 PRESENTER_KEYWORDS_SINGULAR = {'awards', 'presents', 'to present'}
 
