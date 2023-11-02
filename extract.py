@@ -1,5 +1,4 @@
 import json
-import random
 import re
 import time
 
@@ -600,7 +599,6 @@ def extract(file_name, award_names, time_limit):
     start_time = time.time()
     with open(file_name) as f:
         tweets = json.load(f)
-        random.shuffle(tweets)
 
         count = 0
         for tweet in tweets:
