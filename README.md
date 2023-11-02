@@ -66,4 +66,4 @@ Congratulations! You have successfully mined and extracted information from twee
 
 ## Acknowledgements
 
-- Python libraries used: [spaCy](https://spacy.io/), [ftfy](https://ftfy.readthedocs.io/en/latest/#), [langdetect](https://pypi.org/project/langdetect/), [unidecode](https://pypi.org/project/Unidecode/), [editdistance](https://pypi.org/project/editdistance/), [cinemagoer](https://cinemagoer.github.io/)
+- Python libraries used: [spaCy](https://spacy.io/), [ftfy](https://ftfy.readthedocs.io/en/latest/#), [langdetect](https://pypi.org/project/langdetect/), [unidecode](https://pypi.org/project/Unidecode/), [editdistance](https://pypi.org/project/editdistance/), [cinemagoer](https://cinemagoer.github.io/), [nltk](https://www.nltk.org/)
