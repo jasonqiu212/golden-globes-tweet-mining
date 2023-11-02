@@ -3,7 +3,7 @@ import re
 import time
 
 import editdistance
-from imdb import Cinemagoer
+from imdb import Cinemagoer, IMDbError
 import spacy
 
 from keywords import AWARD_CATEGORIES, AWARD_CATEGORIES_CELEBRITY_TYPE, AWARD_CATEGORIES_PICTURE_TYPE, AWARD_QUALIFIERS, extract_keywords_from_award_names, NOMINEE_KEYWORDS, PRESENTER_KEYWORDS_PLURAL, PRESENTER_KEYWORDS_SINGULAR, WINNER_KEYWORDS
@@ -124,8 +124,8 @@ def get_celebrity_search_result(query):
     search_result = []
     try:
         search_result = ia.search_person(query)
-    except:
-        print('Internal server error while fetching from imdbpy')
+    except IMDbError as e:
+        print(e)
     return search_result
 
 
@@ -133,8 +133,8 @@ def get_picture_search_result(query):
     search_result = []
     try:
         search_result = ia.search_movie(query)
-    except:
-        print('Internal server error while fetching from imdbpy')
+    except IMDbError as e:
+        print(e)
     return search_result
 
 
