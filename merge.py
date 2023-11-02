@@ -19,7 +19,7 @@ def merge_through_voting(preliminary_results):
     for preliminary_result in preliminary_results:
         votes[preliminary_result] = votes.get(preliminary_result, 0) + 1
     for host, vote in votes.items():
-        if vote > 5:
+        if vote > 7:
             final_results.append(host)
     return final_results
 

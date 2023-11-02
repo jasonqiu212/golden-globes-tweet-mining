@@ -1,12 +1,16 @@
 from collections import Counter
 from datetime import datetime, timedelta
+import json
+import random
 import re
+import time
 
 import editdistance
 from imdb import Cinemagoer
 import spacy
 
 from keywords import AWARD_CATEGORIES, AWARD_CATEGORIES_CELEBRITY_TYPE, AWARD_CATEGORIES_PICTURE_TYPE, AWARD_QUALIFIERS, extract_keywords_from_award_names, NOMINEE_KEYWORDS, PRESENTER_KEYWORDS_PLURAL, PRESENTER_KEYWORDS_SINGULAR, WINNER_KEYWORDS
+from preprocess import is_english, preprocess
 
 ia = Cinemagoer()
 nlp = spacy.load("en_core_web_sm")
@@ -16,59 +20,76 @@ nlp = spacy.load("en_core_web_sm")
 # extract persons 和 awards 需要在main中完成，我这会儿正在写.
 
 
-def get_most_mentioned(tweets, persons, awards, window_size_seconds):
+# def get_most_mentioned(tweets, persons, awards, window_size_seconds):
 
-    sorted_tweets = sorted(tweets, key=lambda x: x["timestamp_ms"])
+#     sorted_tweets = sorted(tweets, key=lambda x: x["timestamp_ms"])
 
-    start_time = datetime.fromtimestamp(
-        sorted_tweets[0]["timestamp_ms"] / 1000)
-    end_time = start_time + timedelta(seconds=window_size_seconds)
+#     start_time = datetime.fromtimestamp(
+#         sorted_tweets[0]["timestamp_ms"] / 1000)
+#     end_time = start_time + timedelta(seconds=window_size_seconds)
 
-    results = []
+#     results = []
 
-    for i in range(len(sorted_tweets)):
-        current_time = datetime.fromtimestamp(
-            sorted_tweets[i]["timestamp_ms"] / 1000)
+#     for i in range(len(sorted_tweets)):
+#         current_time = datetime.fromtimestamp(
+#             sorted_tweets[i]["timestamp_ms"] / 1000)
 
-        # If the tweet we are parsing right not is not in the time window, we need to update the time window.
-        if current_time > end_time:
-            start_time = end_time
-            end_time = start_time + timedelta(seconds=window_size_seconds)
+#         # If the tweet we are parsing right not is not in the time window, we need to update the time window.
+#         if current_time > end_time:
+#             start_time = end_time
+#             end_time = start_time + timedelta(seconds=window_size_seconds)
 
-        # 统计当前时间窗口内的人名和奖项提及频率
-        person_counter = Counter()
-        award_counter = Counter()
-        while i < len(sorted_tweets) and datetime.fromtimestamp(sorted_tweets[i]["timestamp_ms"] / 1000) <= end_time:
-            tweet_text = sorted_tweets[i]["text"]
-            for person in persons:
-                if person in tweet_text:
-                    person_counter[person] += 1
-            for award in awards:
-                if award in tweet_text:
-                    award_counter[award] += 1
-            i += 1
+#         # 统计当前时间窗口内的人名和奖项提及频率
+#         person_counter = Counter()
+#         award_counter = Counter()
+#         while i < len(sorted_tweets) and datetime.fromtimestamp(sorted_tweets[i]["timestamp_ms"] / 1000) <= end_time:
+#             tweet_text = sorted_tweets[i]["text"]
+#             for person in persons:
+#                 if person in tweet_text:
+#                     person_counter[person] += 1
+#             for award in awards:
+#                 if award in tweet_text:
+#                     award_counter[award] += 1
+#             i += 1
 
-        # 获取当前时间窗口内最常提及的人名和奖项
-        most_common_person = person_counter.most_common(1)
-        most_common_award = award_counter.most_common(1)
+#         # 获取当前时间窗口内最常提及的人名和奖项
+#         most_common_person = person_counter.most_common(1)
+#         most_common_award = award_counter.most_common(1)
 
-        results.append({
-            "time_window": (start_time, end_time),
-            "most_common_person": most_common_person,
-            "most_common_award": most_common_award
-        })
+#         results.append({
+#             "time_window": (start_time, end_time),
+#             "most_common_person": most_common_person,
+#             "most_common_award": most_common_award
+#         })
 
-    return results
+#     return results
 
 
-def find_relevant_tweets(tweets, keywords):
-    # 过滤出包含关键词的推文, 关键词（win，won，got，etc,在main中定义keywords）
-    relevant_tweets = []
-    for tweet in tweets:
-        if any(keyword.lower() in tweet["text"].lower() for keyword in keywords):
-            relevant_tweets.append(tweet)
-            # list of tweets
-    return relevant_tweets
+# def find_relevant_tweets(tweets, keywords):
+#     # 过滤出包含关键词的推文, 关键词（win，won，got，etc,在main中定义keywords）
+#     relevant_tweets = []
+#     for tweet in tweets:
+#         if any(keyword.lower() in tweet["text"].lower() for keyword in keywords):
+#             relevant_tweets.append(tweet)
+#             # list of tweets
+#     return relevant_tweets
+
+def get_celebrity_search_result(query):
+    search_result = []
+    try:
+        search_result = ia.search_person(query)
+    except:
+        print('Internal server error while fetching from imdbpy')
+    return search_result
+
+
+def get_picture_search_result(query):
+    search_result = []
+    try:
+        search_result = ia.search_movie(query)
+    except:
+        print('Internal server error while fetching from imdbpy')
+    return search_result
 
 
 def get_best_ceremony_entity(candidates, type):
@@ -84,19 +105,18 @@ def get_best_ceremony_entity(candidates, type):
     """
     candidate_search_results = []
     for candidate in candidates:
-        search_results = []
         if type == 'celebrity':
-            search_results = ia.search_person(candidate)
-            if search_results:
+            search_result = get_celebrity_search_result(candidate)
+            if search_result:
                 candidate_search_results.append(
-                    search_results[0].get('name').lower())
+                    search_result[0].get('name').lower())
             else:
                 candidate_search_results.append(None)
         elif type == 'picture':
-            search_results = ia.search_movie(candidate)
-            if search_results:
+            search_result = get_picture_search_result(candidate)
+            if search_result:
                 candidate_search_results.append(
-                    search_results[0].get('title').lower())
+                    search_result[0].get('title').lower())
             else:
                 candidate_search_results.append(None)
 
@@ -110,7 +130,7 @@ def get_best_ceremony_entity(candidates, type):
             best_name = candidate_search_results[i]
             least_edit_distance = edit_distance
 
-    if least_edit_distance > 10:
+    if least_edit_distance > 4:
         return None
 
     return best_name
@@ -164,9 +184,9 @@ def find_ceremony_entity_from_right_side_words(right_side_words, type):
     return get_best_ceremony_entity(candidates, type)
 
 
-def extract_hosts(tweets):
+def extract_hosts(tweet):
     """
-    Extracts potential hosts from tweets using the following strategies:
+    Extracts potential hosts from tweet using the following strategies:
     1. Find phrases in the format of 'hosted by ' + PERSON_NAME + ' and ' + PERSON_NAME
     2. Find phrases in the format of 'hosted by ' + PERSON_NAME
     3. Find phrases in the format of 'hosts ' + PERSON_NAME + ' and ' + PERSON_NAME
@@ -178,119 +198,112 @@ def extract_hosts(tweets):
         List of potential hosts.
     """
     hosts = []
-    for tweet in tweets:
-        if len(hosts) > 20:
-            break
-        if re.search("hosted by [\w\s]+ and [\w\s]+", tweet.text):
-            hosted_by_split = tweet.text.split('hosted by ')
-            right_side_words = hosted_by_split[1].split()
+    if re.search("hosted by [\w\s]+ and [\w\s]+", tweet):
+        hosted_by_split = tweet.split('hosted by ')
+        right_side_words = hosted_by_split[1].split()
 
-            and_split = ' '.join(right_side_words).split(' and ')
+        and_split = ' '.join(right_side_words).split(' and ')
 
-            left_candidate = and_split[0]
-            search_result = ia.search_person(left_candidate)
-            if search_result:
-                left_candidate_search_result = search_result[0].get(
-                    'name').lower()
+        left_candidate = and_split[0]
+        search_result = get_celebrity_search_result(left_candidate)
 
-                if editdistance.eval(left_candidate, left_candidate_search_result) < 10:
-                    hosts.append(left_candidate_search_result)
+        if search_result:
+            left_candidate_search_result = search_result[0].get(
+                'name').lower()
 
-            right_host_words = and_split[1].split()
-            right_host_name = find_ceremony_entity_from_right_side_words(
-                right_host_words, 'celebrity')
-            if right_host_name:
-                hosts.append(right_host_name)
-        elif 'hosted by ' in tweet.text:
-            hosted_by_split = tweet.text.split('hosted by ')
-            right_side_words = hosted_by_split[1].split()
+            if editdistance.eval(left_candidate, left_candidate_search_result) < 10:
+                hosts.append(left_candidate_search_result)
 
-            host_name = find_ceremony_entity_from_right_side_words(
-                right_side_words, 'celebrity')
-            if host_name:
-                hosts.append(host_name)
-        elif re.search("hosts [\w\s]+ and [\w\s]+", tweet.text):
-            hosts_split = tweet.text.split('hosts ')
-            right_side_words = hosts_split[1].split()
+        right_host_words = and_split[1].split()
+        right_host_name = find_ceremony_entity_from_right_side_words(
+            right_host_words, 'celebrity')
+        if right_host_name:
+            hosts.append(right_host_name)
+    elif 'hosted by ' in tweet:
+        hosted_by_split = tweet.split('hosted by ')
+        right_side_words = hosted_by_split[1].split()
 
-            and_split = ' '.join(right_side_words).split(' and ')
+        host_name = find_ceremony_entity_from_right_side_words(
+            right_side_words, 'celebrity')
+        if host_name:
+            hosts.append(host_name)
+    elif re.search("hosts [\w\s]+ and [\w\s]+", tweet):
+        hosts_split = tweet.split('hosts ')
+        right_side_words = hosts_split[1].split()
 
-            left_candidate = and_split[0]
-            search_result = ia.search_person(left_candidate)
-            if search_result:
-                left_candidate_search_result = search_result[0].get(
-                    'name').lower()
+        and_split = ' '.join(right_side_words).split(' and ')
 
-                if editdistance.eval(left_candidate, left_candidate_search_result) < 10:
-                    hosts.append(left_candidate_search_result)
+        left_candidate = and_split[0]
+        search_result = get_celebrity_search_result(left_candidate)
+        if search_result:
+            left_candidate_search_result = search_result[0].get(
+                'name').lower()
 
-            right_host_words = and_split[1].split()
-            right_host_name = find_ceremony_entity_from_right_side_words(
-                right_host_words, 'celebrity')
-            if right_host_name:
-                hosts.append(right_host_name)
-        elif 'host ' in tweet.text:
-            hosted_by_split = tweet.text.split('host ')
-            right_side_words = hosted_by_split[1].split()
+            if editdistance.eval(left_candidate, left_candidate_search_result) < 10:
+                hosts.append(left_candidate_search_result)
 
-            host_name = find_ceremony_entity_from_right_side_words(
-                right_side_words, 'celebrity')
-            if host_name:
-                hosts.append(host_name)
+        right_host_words = and_split[1].split()
+        right_host_name = find_ceremony_entity_from_right_side_words(
+            right_host_words, 'celebrity')
+        if right_host_name:
+            hosts.append(right_host_name)
+    elif 'host ' in tweet:
+        hosted_by_split = tweet.split('host ')
+        right_side_words = hosted_by_split[1].split()
+
+        host_name = find_ceremony_entity_from_right_side_words(
+            right_side_words, 'celebrity')
+        if host_name:
+            hosts.append(host_name)
     return hosts
 
 
-def extract_awards(tweets):
+def extract_award(tweet):
     """
-    Extracts potential awards from tweets using the following strategies:
+    Extracts potential award from tweets using the following strategies:
     1. Find phrases in the format of PERSON_NAME + ' award'
     2. Find phrases in the format of 'best ' + AWARD_CATEGORY + AWARD_QUALIFIER
 
     Args:
         tweets: List of tweets to extract from.
     Returns:
-        List of potential awards.
+        String representing potential award.
     """
-    awards = []
-    for tweet in tweets:
-        if len(awards) > 30:
-            break
-        if ' award' in tweet.text:
-            award_split = tweet.text.split(' award')
-            left_side_words = award_split[0].split()
+    if ' award' in tweet:
+        award_split = tweet.split(' award')
+        left_side_words = award_split[0].split()
 
-            celebrity_award_name = find_ceremony_entity_from_left_side_words(
-                left_side_words, 'celebrity')
-            if celebrity_award_name:
-                awards.append(celebrity_award_name + ' award')
+        celebrity_award_name = find_ceremony_entity_from_left_side_words(
+            left_side_words, 'celebrity')
+        if celebrity_award_name:
+            return celebrity_award_name + ' award'
 
-        elif 'best ' in tweet.text:
-            best_split = tweet.text.split('best ')
-            right_side_words = best_split[1].split()
+    if 'best ' in tweet:
+        best_split = tweet.split('best ')
+        right_side_words = best_split[1].split()
 
-            matched_category_index = -1
-            for award_category in AWARD_CATEGORIES:
-                if award_category in right_side_words:
-                    matched_category_index = right_side_words.index(
-                        award_category)
-                    break
+        matched_category_index = -1
+        for award_category in AWARD_CATEGORIES:
+            if award_category in right_side_words:
+                matched_category_index = right_side_words.index(
+                    award_category)
+                break
 
-            if matched_category_index == -1:
-                continue
+        if matched_category_index == -1:
+            return None
 
-            matched_qualifier_index = -1
-            for i in range(len(right_side_words) - 1, matched_category_index - 1, -1):
-                if right_side_words[i] in AWARD_QUALIFIERS:
-                    matched_qualifier_index = i
-                    break
+        matched_qualifier_index = -1
+        for i in range(len(right_side_words) - 1, matched_category_index - 1, -1):
+            if right_side_words[i] in AWARD_QUALIFIERS:
+                matched_qualifier_index = i
+                break
 
-            award_end_index = matched_qualifier_index
-            if matched_qualifier_index == -1:
-                award_end_index = matched_category_index
+        award_end_index = matched_qualifier_index
+        if matched_qualifier_index == -1:
+            award_end_index = matched_category_index
 
-            awards.append(
-                'best ' + ' '.join(right_side_words[:award_end_index + 1]))
-    return awards
+        return 'best ' + ' '.join(right_side_words[:award_end_index + 1])
+    return None
 
 
 def extract_winner(tweet, matched_award_keywords):
@@ -305,7 +318,7 @@ def extract_winner(tweet, matched_award_keywords):
     """
     matching_keyword = find_first_matching_keyword(tweet, WINNER_KEYWORDS)
     if matching_keyword:
-        keyword_split = tweet.text.split(' ' + matching_keyword + ' ')
+        keyword_split = tweet.split(' ' + matching_keyword + ' ')
         left_side_words = keyword_split[0].split()
 
         winner_name = ''
@@ -336,7 +349,7 @@ def find_closest_matching_ceremony_entity(tweet, type):
     if type != 'celebrity' and type != 'picture':
         return None
 
-    words = tweet.text.split()
+    words = tweet.split()
     candidates = []
     for i in range(len(words)):
         for j in range(2 if type == 'celebrity' else 1, 5 if type == 'celebrity' else 8):
@@ -377,7 +390,7 @@ def find_first_matching_keyword(tweet, keywords):
         String representing first matching keyword in tweet. None, if no matches.
     """
     for keyword in keywords:
-        if keyword in tweet.text:
+        if keyword in tweet:
             return keyword
     return None
 
@@ -395,14 +408,14 @@ def extract_presenters(tweet, award_names):
     matching_keyword = find_first_matching_keyword(
         tweet, PRESENTER_KEYWORDS_PLURAL)
     if matching_keyword:
-        keyword_split = tweet.text.split(' ' + matching_keyword + ' ')
+        keyword_split = tweet.split(' ' + matching_keyword + ' ')
         left_side_words = keyword_split[0].split()
         if 'and' in left_side_words:
             presenters = []
             and_split = ' '.join(left_side_words).split(' and ')
 
             right_candidate = and_split[1]
-            search_result = ia.search_person(right_candidate)
+            search_result = get_celebrity_search_result(right_candidate)
             if search_result:
                 right_candidate_search_result = search_result[0].get(
                     'name').lower()
@@ -420,7 +433,7 @@ def extract_presenters(tweet, award_names):
     matching_keyword = find_first_matching_keyword(
         tweet, PRESENTER_KEYWORDS_SINGULAR)
     if matching_keyword:
-        keyword_split = tweet.text.split(' ' + matching_keyword + ' ')
+        keyword_split = tweet.split(' ' + matching_keyword + ' ')
         left_side_words = keyword_split[0].split()
         presenter_name = find_ceremony_entity_from_left_side_words(
             left_side_words, 'celebrity')
@@ -429,153 +442,178 @@ def extract_presenters(tweet, award_names):
     return []
 
 
-def extract_using_award_names(tweets, award_names):
+def extract_using_award_names(tweet, award_names, award_results):
     """
-    Extracts potential presenters, nominees, and winners from tweets based on official award names.
+    Extracts potential presenters, nominees, and winners from tweet based on official award names.
+    Adds extracted result into award_results.
 
     Args:
-        tweets: List of tweets to extract from.
+        tweet: Tweets to extract from.
         award_names: List of official award names.
-    Returns:
-        Dicionary of official award names mapped to potential presenters, nominees, and winners.
+        award_results: Dictionary of award results to add to.
     """
-    award_results = {}
-    for award_name in award_names:
-        award_results[award_name] = {
-            'presenters': [], 'nominees': [], 'winners': []}
-
     awards_keywords = extract_keywords_from_award_names(award_names)
 
-    for tweet in tweets:
-        if ' award' not in tweet.text and 'best ' not in tweet.text:
-            continue
+    if ' award' not in tweet and 'best ' not in tweet:
+        return
 
-        has_award_keywords = False
-        mentioned_award = ''
+    # Find mentioned award in tweet in following priority levels:
+    # 1. For an award, if all must_have keywords and all qualifiers are in tweet
+    # 2. For an award, if all must_have keywords and any qualifier is in tweet
+    # 3. For an award, if all must_have keywords are in tweet
+    has_award_keywords = False
+    mentioned_award = ''
+    for award, keywords in awards_keywords.items():
+        must_have = keywords['must_have']
+        qualifiers = keywords['qualifiers']
+
+        if all(mh in tweet for mh in must_have) and all(q in tweet for q in qualifiers):
+            has_award_keywords = True
+            mentioned_award = award
+            break
+
+    if not has_award_keywords:
         for award, keywords in awards_keywords.items():
             must_have = keywords['must_have']
             qualifiers = keywords['qualifiers']
 
-            if all(mh in tweet.text for mh in must_have) and all(q in tweet.text for q in qualifiers):
+            if all(mh in tweet for mh in must_have) and any(q in tweet for q in qualifiers):
                 has_award_keywords = True
                 mentioned_award = award
                 break
 
-        if not has_award_keywords:
-            for award, keywords in awards_keywords.items():
-                must_have = keywords['must_have']
-                qualifiers = keywords['qualifiers']
+    if not has_award_keywords:
+        for award, keywords in awards_keywords.items():
+            must_have = keywords['must_have']
+            qualifiers = keywords['qualifiers']
 
-                if all(mh in tweet.text for mh in must_have) and any(q in tweet.text for q in qualifiers):
-                    has_award_keywords = True
-                    mentioned_award = award
-                    break
+            if all(mh in tweet for mh in must_have):
+                has_award_keywords = True
+                mentioned_award = award
+                break
 
-        if not has_award_keywords:
-            for award, keywords in awards_keywords.items():
-                must_have = keywords['must_have']
-                qualifiers = keywords['qualifiers']
+    if not has_award_keywords:
+        return
 
-                if all(mh in tweet.text for mh in must_have):
-                    has_award_keywords = True
-                    mentioned_award = award
-                    break
+    candidate_winner = extract_winner(
+        tweet, awards_keywords[mentioned_award]['must_have'])
+    if candidate_winner:
+        award_results[mentioned_award]['winners'].append(candidate_winner)
+        return
 
-        if not has_award_keywords:
-            continue
+    candidate_presenters = extract_presenters(tweet, award_names)
+    if len(candidate_presenters) != 0:
+        award_results[mentioned_award]['presenters'] += candidate_presenters
+        return
 
-        candidate_winner = extract_winner(
-            tweet, awards_keywords[mentioned_award]['must_have'])
-        if candidate_winner:
-            award_results[mentioned_award]['winners'].append(candidate_winner)
-            continue
-
-        candidate_presenters = extract_presenters(tweet, award_names)
-        if len(candidate_presenters) != 0:
-            award_results[mentioned_award]['presenters'] += candidate_presenters
-            continue
-
-        candidate_nominee = extract_nominee(
-            tweet, awards_keywords[mentioned_award]['must_have'])
-        if candidate_nominee:
-            award_results[mentioned_award]['nominees'].append(
-                candidate_nominee)
-            continue
-
-    return award_results
+    candidate_nominee = extract_nominee(
+        tweet, awards_keywords[mentioned_award]['must_have'])
+    if candidate_nominee:
+        award_results[mentioned_award]['nominees'].append(
+            candidate_nominee)
+        return
 
 
-def extract_person(tweet):
-    doc = nlp(tweet["text"])
-    entities = [(ent.text, ent.label_) for ent in doc.ents]
-    persons = [ent for ent in entities if ent[1] == 'PERSON']
-    return persons
+# def extract_person(tweet):
+#     doc = nlp(tweet["text"])
+#     entities = [(ent.text, ent.label_) for ent in doc.ents]
+#     persons = [ent for ent in entities if ent[1] == 'PERSON']
+#     return persons
 
 
-def extract_award(tweet):
-    doc = nlp(tweet["text"])
-    entities = [(ent.text, ent.label_) for ent in doc.ents]
-    awards = [ent for ent in entities if ent[1]
-              == 'WORK_OF_ART' or ent[1] == 'EVENT']
-    return awards
+# def extract_award(tweet):
+#     doc = nlp(tweet["text"])
+#     entities = [(ent.text, ent.label_) for ent in doc.ents]
+#     awards = [ent for ent in entities if ent[1]
+#               == 'WORK_OF_ART' or ent[1] == 'EVENT']
+#     return awards
 
 
-def dextract_all(tweet):
-    persons = []
-    awards = []
-    for tweets in tweet:
-        persons.append(extract_person(tweets))
-        awards.append(extract_award(tweets))
-    return persons, awards
+# def dextract_all(tweet):
+#     persons = []
+#     awards = []
+#     for tweets in tweet:
+#         persons.append(extract_person(tweets))
+#         awards.append(extract_award(tweets))
+#     return persons, awards
 
 
-def extract_nomination_info(sentence):
-    matcher = spacy.Matcher(nlp.vocab)
+# def extract_nomination_info(sentence):
+#     matcher = spacy.Matcher(nlp.vocab)
 
-    # 定义匹配模式
-    person_pattern = [{"ENT_TYPE": "PERSON"}]
-    award_pattern = [{"LOWER": "best"}, {"POS": "NOUN", "OP": "?"}]
-    nominate_pattern = [{"LEMMA": "nominate"}]
-    optional_words_pattern = [
-        {"POS": "VERB", "OP": "*"}, {"LOWER": "to", "OP": "?"}]
+#     # 定义匹配模式
+#     person_pattern = [{"ENT_TYPE": "PERSON"}]
+#     award_pattern = [{"LOWER": "best"}, {"POS": "NOUN", "OP": "?"}]
+#     nominate_pattern = [{"LEMMA": "nominate"}]
+#     optional_words_pattern = [
+#         {"POS": "VERB", "OP": "*"}, {"LOWER": "to", "OP": "?"}]
 
-    matcher.add("PERSON", [person_pattern])
-    matcher.add("AWARD", [award_pattern])
-    matcher.add("NOMINATE", [nominate_pattern])
+#     matcher.add("PERSON", [person_pattern])
+#     matcher.add("AWARD", [award_pattern])
+#     matcher.add("NOMINATE", [nominate_pattern])
 
-    doc = nlp(sentence)
+#     doc = nlp(sentence)
 
-    matches = matcher(doc)
-    persons = [doc[start:end].text for match_id, start,
-               end in matches if nlp.vocab.strings[match_id] == "PERSON"]
-    awards = [doc[start:end].text for match_id, start,
-              end in matches if nlp.vocab.strings[match_id] == "AWARD"]
+#     matches = matcher(doc)
+#     persons = [doc[start:end].text for match_id, start,
+#                end in matches if nlp.vocab.strings[match_id] == "PERSON"]
+#     awards = [doc[start:end].text for match_id, start,
+#               end in matches if nlp.vocab.strings[match_id] == "AWARD"]
 
-    if any(token.lemma_ == "nominate" for token in doc):
-        return [(person, award) for person in persons for award in awards]
-    return []
+#     if any(token.lemma_ == "nominate" for token in doc):
+#         return [(person, award) for person in persons for award in awards]
+#     return []
 
 
-def extract(tweets, award_names):
+def extract(file_name, award_names):
     """
     Extracts hosts, award names, presenters, nominees, and
     winners from tweets.
 
     Args:
-        tweets: List of tweets to extract from.
+        file_name: File name of data file containing tweets.
         award_names: List of official award names.
     Returns:
         Dictionary of preliminary results extracted from tweets.
     """
-    preliminary_results = {}
-    preliminary_results['hosts'] = extract_hosts(tweets)
-    print('2/9: Finished extracting hosts')
+    hosts = []
+    awards = []
+    award_results = {}
+    for award_name in award_names:
+        award_results[award_name] = {
+            'presenters': [], 'nominees': [], 'winners': []}
 
-    preliminary_results['awards'] = extract_awards(tweets)
-    print('3/9: Finished extracting awards')
+    start_time = time.time()
+    with open(file_name) as f:
+        tweets = json.load(f)
 
-    preliminary_results['award_results'] = extract_using_award_names(
-        tweets, award_names)
-    print('4/9: Finished extracting award results')
+        count = 0
+        for tweet in tweets:
+            if time.time() - start_time >= 60:
+                print('15 minute time limit reached for extraction')
+                break
+
+            if count % 50 == 0:
+                print('Parsed {} tweets'.format(count))
+            count += 1
+
+            t = preprocess(tweet['text'])
+            if not is_english(t):
+                continue
+
+            if len(hosts) < 30:
+                extracted_hosts = extract_hosts(t)
+                if len(extracted_hosts) > 0:
+                    hosts += extract_hosts(t)
+                    continue
+
+            extracted_award = extract_award(t)
+            if extracted_award:
+                awards.append(extracted_award)
+
+            extract_using_award_names(t, award_names, award_results)
+
+    preliminary_results = {'hosts': hosts,
+                           'awards': awards, 'award_results': award_results}
 
     return preliminary_results
