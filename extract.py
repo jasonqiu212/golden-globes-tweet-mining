@@ -197,7 +197,7 @@ def find_ceremony_entity_from_left_side_words(left_side_words, type):
         return None
 
     candidates = []
-    for i in range(2 if type == 'celebrity' else 1, 5 if type == 'celebrity' else 8):
+    for i in range(2 if type == 'celebrity' else 1, 5):
         if i > len(left_side_words):
             break
         candidates.append(
@@ -221,7 +221,7 @@ def find_ceremony_entity_from_right_side_words(right_side_words, type):
         return None
 
     candidates = []
-    for i in range(2 if type == 'celebrity' else 1, 5 if type == 'celebrity' else 8):
+    for i in range(2 if type == 'celebrity' else 1, 5):
         if i >= len(right_side_words):
             break
         candidates.append(
@@ -381,48 +381,42 @@ def extract_winner(tweet, matched_award_keywords):
     return None
 
 
-def find_closest_matching_ceremony_entity(tweet, type):
+def extract_nominees(tweet, matched_award_keywords):
     """
-    Extract closest matching ceremony entity from tweet.
-
-    Args:
-        tweet: Tweet to search from.
-        type: 'celebrity' or 'picture'.
-    Returns:
-        String representing extracted ceremony entity. None, if ceremony entity
-        cannot be identified.
-    """
-    if type != 'celebrity' and type != 'picture':
-        return None
-
-    words = tweet.split()
-    candidates = []
-    for i in range(len(words)):
-        for j in range(2 if type == 'celebrity' else 1, 5 if type == 'celebrity' else 8):
-            if i + j >= len(words):
-                break
-
-            candidates.append(' '.join(words[i:i + j]))
-
-    return get_best_ceremony_entity(candidates, type)
-
-
-def extract_nominee(tweet, matched_award_keywords):
-    """
-    Extracts nominee from tweet.
+    Extracts nominees from tweet.
 
     Args:
         tweet: Tweet to extract from.
         matched_award_keywords: List of must-have award keywords that the given tweet matched with.
     Returns:
-        String representing extracted nominee from tweet. None, if no nominee is found.
+        List of extracted nominees from tweet. Empty list, if no nominee is found.
     """
-    nominee = None
-    if any(k in AWARD_CATEGORIES_CELEBRITY_TYPE for k in matched_award_keywords):
-        nominee = find_closest_matching_ceremony_entity(tweet, 'celebrity')
-    elif any(k in AWARD_CATEGORIES_PICTURE_TYPE for k in matched_award_keywords):
-        nominee = find_closest_matching_ceremony_entity(tweet, 'picture')
-    return nominee
+    matching_keyword = find_first_matching_keyword(
+        tweet, NOMINEE_KEYWORDS)
+    if matching_keyword:
+        keyword_split = tweet.split(' ' + matching_keyword + ' ')
+        left_side_words = keyword_split[0].split()
+        right_side_words = keyword_split[1].split()
+        left_nominee, right_nominee = '', ''
+
+        if any(k in AWARD_CATEGORIES_CELEBRITY_TYPE for k in matched_award_keywords):
+            left_nominee = find_ceremony_entity_from_left_side_words(
+                left_side_words, 'celebrity')
+            right_nominee = find_ceremony_entity_from_right_side_words(
+                right_side_words, 'celebrity')
+        elif any(k in AWARD_CATEGORIES_PICTURE_TYPE for k in matched_award_keywords):
+            left_nominee = find_ceremony_entity_from_left_side_words(
+                left_side_words, 'picture')
+            right_nominee = find_ceremony_entity_from_right_side_words(
+                right_side_words, 'picture')
+
+        nominees = []
+        if left_nominee:
+            nominees.append(left_nominee)
+        if right_nominee:
+            nominees.append(right_nominee)
+        return nominees
+    return []
 
 
 def find_first_matching_keyword(tweet, keywords):
@@ -552,11 +546,10 @@ def extract_using_award_names(tweet, award_names, award_results):
         award_results[mentioned_award]['presenters'] += candidate_presenters
         return
 
-    candidate_nominee = extract_nominee(
+    candidate_nominees = extract_nominees(
         tweet, awards_keywords[mentioned_award]['must_have'])
-    if candidate_nominee:
-        award_results[mentioned_award]['nominees'].append(
-            candidate_nominee)
+    if len(candidate_nominees) != 0:
+        award_results[mentioned_award]['nominees'] += candidate_nominees
         return
 
 
@@ -570,8 +563,16 @@ def extract_best_dressed(tweet):
         String representing extracted best dressed celebrity from tweet. None, if no best dressed celebrity is found.
     """
     if 'best dressed' in tweet:
-        return find_closest_matching_ceremony_entity(
-            tweet, 'celebrity')
+        keyword_split = tweet.split('best dressed')
+        left_side_words = keyword_split[0].split()
+
+        best_dressed_name = ''
+        best_dressed_name = find_ceremony_entity_from_left_side_words(
+            left_side_words, 'celebrity')
+
+        if best_dressed_name != '':
+            return best_dressed_name
+
     return None
 
 
