@@ -36,7 +36,7 @@ $ cd golden-globes-tweet-mining
 2. Install the required Python packages from `requirements.txt`.
 
 ```
-$ python3 install -r requirements.txt
+$ python3 -m pip install -r requirements.txt
 ```
 
 3. Download the `spacy` package `en_core_web_sm`.
