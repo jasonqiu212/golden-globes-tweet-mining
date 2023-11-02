@@ -42,7 +42,7 @@ TWEETS_FILE_NAME = 'gg{}.json'.format(YEAR)
 ANSWER_FILE_NAME = 'gg{}answers.json'.format(YEAR)
 ```
 
-> If you wish to run the extraction on a smaller set of tweets, we created a small representative dataset called `gg2013-subset.json`. To use this smaller dataset, replace `TWEETS_FILE_NAME` with `gg2013-subset.json`.
+> If you wish to run the extraction on a smaller set of tweets, we created a small representative dataset called `gg2013-subset.json`. To use this smaller dataset, replace `TWEETS_FILE_NAME` with `'gg2013-subset.json'`.
 
 4. Extracting information from tweets takes a long time. Thus, we included a time limit for running the extraction. If you wish change the time limit for extracting information, change the corresponding constant under the `main` function in `gg_api.py`. The current time limit is 15 minutes, or 900 seconds.
 
