@@ -20,6 +20,10 @@ The extracted information includes:
 - Award nominees, given official award names
 - Award winners, given official award names
 
+We also extracted the following additional information:
+
+- #BestDressed celebrity through a popular vote on the number of mentions
+
 ## Getting Started
 
 1. Install the required Python packages from `requirements.txt`.

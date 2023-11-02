@@ -1,7 +1,4 @@
-from collections import Counter
-from datetime import datetime, timedelta
 import json
-import random
 import re
 import time
 
@@ -15,12 +12,10 @@ from preprocess import is_english, preprocess
 ia = Cinemagoer()
 nlp = spacy.load("en_core_web_sm")
 
+# def get_most_mentioned(tweets, persons, awards, window_size_seconds):
 # to use this function:
 # tweets is origin tweets(处理过冗余文字), persons和awards是我们已经通过extract 方法找到的所有的tweets中提及的可能的人物和奖项，他们之间的联系(who win what)还没被建立起来.
 # extract persons 和 awards 需要在main中完成，我这会儿正在写.
-
-
-# def get_most_mentioned(tweets, persons, awards, window_size_seconds):
 
 #     sorted_tweets = sorted(tweets, key=lambda x: x["timestamp_ms"])
 
@@ -73,6 +68,57 @@ nlp = spacy.load("en_core_web_sm")
 #             relevant_tweets.append(tweet)
 #             # list of tweets
 #     return relevant_tweets
+
+# def extract_person(tweet):
+#     doc = nlp(tweet["text"])
+#     entities = [(ent.text, ent.label_) for ent in doc.ents]
+#     persons = [ent for ent in entities if ent[1] == 'PERSON']
+#     return persons
+
+
+# def extract_award(tweet):
+#     doc = nlp(tweet["text"])
+#     entities = [(ent.text, ent.label_) for ent in doc.ents]
+#     awards = [ent for ent in entities if ent[1]
+#               == 'WORK_OF_ART' or ent[1] == 'EVENT']
+#     return awards
+
+
+# def dextract_all(tweet):
+#     persons = []
+#     awards = []
+#     for tweets in tweet:
+#         persons.append(extract_person(tweets))
+#         awards.append(extract_award(tweets))
+#     return persons, awards
+
+
+# def extract_nomination_info(sentence):
+#     matcher = spacy.Matcher(nlp.vocab)
+
+#     # 定义匹配模式
+#     person_pattern = [{"ENT_TYPE": "PERSON"}]
+#     award_pattern = [{"LOWER": "best"}, {"POS": "NOUN", "OP": "?"}]
+#     nominate_pattern = [{"LEMMA": "nominate"}]
+#     optional_words_pattern = [
+#         {"POS": "VERB", "OP": "*"}, {"LOWER": "to", "OP": "?"}]
+
+#     matcher.add("PERSON", [person_pattern])
+#     matcher.add("AWARD", [award_pattern])
+#     matcher.add("NOMINATE", [nominate_pattern])
+
+#     doc = nlp(sentence)
+
+#     matches = matcher(doc)
+#     persons = [doc[start:end].text for match_id, start,
+#                end in matches if nlp.vocab.strings[match_id] == "PERSON"]
+#     awards = [doc[start:end].text for match_id, start,
+#               end in matches if nlp.vocab.strings[match_id] == "AWARD"]
+
+#     if any(token.lemma_ == "nominate" for token in doc):
+#         return [(person, award) for person in persons for award in awards]
+#     return []
+
 
 def get_celebrity_search_result(query):
     search_result = []
@@ -514,55 +560,19 @@ def extract_using_award_names(tweet, award_names, award_results):
         return
 
 
-# def extract_person(tweet):
-#     doc = nlp(tweet["text"])
-#     entities = [(ent.text, ent.label_) for ent in doc.ents]
-#     persons = [ent for ent in entities if ent[1] == 'PERSON']
-#     return persons
+def extract_best_dressed(tweet):
+    """
+    Extracts best dressed celebrity from tweet.
 
-
-# def extract_award(tweet):
-#     doc = nlp(tweet["text"])
-#     entities = [(ent.text, ent.label_) for ent in doc.ents]
-#     awards = [ent for ent in entities if ent[1]
-#               == 'WORK_OF_ART' or ent[1] == 'EVENT']
-#     return awards
-
-
-# def dextract_all(tweet):
-#     persons = []
-#     awards = []
-#     for tweets in tweet:
-#         persons.append(extract_person(tweets))
-#         awards.append(extract_award(tweets))
-#     return persons, awards
-
-
-# def extract_nomination_info(sentence):
-#     matcher = spacy.Matcher(nlp.vocab)
-
-#     # 定义匹配模式
-#     person_pattern = [{"ENT_TYPE": "PERSON"}]
-#     award_pattern = [{"LOWER": "best"}, {"POS": "NOUN", "OP": "?"}]
-#     nominate_pattern = [{"LEMMA": "nominate"}]
-#     optional_words_pattern = [
-#         {"POS": "VERB", "OP": "*"}, {"LOWER": "to", "OP": "?"}]
-
-#     matcher.add("PERSON", [person_pattern])
-#     matcher.add("AWARD", [award_pattern])
-#     matcher.add("NOMINATE", [nominate_pattern])
-
-#     doc = nlp(sentence)
-
-#     matches = matcher(doc)
-#     persons = [doc[start:end].text for match_id, start,
-#                end in matches if nlp.vocab.strings[match_id] == "PERSON"]
-#     awards = [doc[start:end].text for match_id, start,
-#               end in matches if nlp.vocab.strings[match_id] == "AWARD"]
-
-#     if any(token.lemma_ == "nominate" for token in doc):
-#         return [(person, award) for person in persons for award in awards]
-#     return []
+    Args:
+        tweet: Tweet to extract from.
+    Returns:
+        String representing extracted best dressed celebrity from tweet. None, if no best dressed celebrity is found.
+    """
+    if 'best dressed' in tweet:
+        return find_closest_matching_ceremony_entity(
+            tweet, 'celebrity')
+    return None
 
 
 def extract(file_name, award_names, time_limit):
@@ -580,6 +590,7 @@ def extract(file_name, award_names, time_limit):
     hosts = []
     awards = []
     award_results = {}
+    best_dressed = []
     for award_name in award_names:
         award_results[award_name] = {
             'presenters': [], 'nominees': [], 'winners': []}
@@ -608,6 +619,11 @@ def extract(file_name, award_names, time_limit):
                     hosts += extract_hosts(t)
                     continue
 
+            extracted_best_dressed = extract_best_dressed(t)
+            if extracted_best_dressed:
+                best_dressed.append(extracted_best_dressed)
+                continue
+
             extracted_award = extract_award(t)
             if extracted_award:
                 awards.append(extracted_award)
@@ -615,7 +631,7 @@ def extract(file_name, award_names, time_limit):
             extract_using_award_names(t, award_names, award_results)
 
     preliminary_results = {'hosts': hosts,
-                           'awards': awards, 'award_results': award_results}
+                           'awards': awards, 'award_results': award_results, 'best_dressed': best_dressed}
     print(preliminary_results)
     print('1/6: Finished extracting information from tweets')
     return preliminary_results

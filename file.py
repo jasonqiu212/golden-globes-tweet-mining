@@ -35,6 +35,9 @@ def write_human_readable_results(data, year):
     lines.append('Awards: ' + ', '.join(data['awards']))
     lines.append('')
 
+    lines.append('Best dressed: ' + data['best_dressed'])
+    lines.append('')
+
     for award in data['award_results'].keys():
         award_result = data['award_results'][award]
 
